@@ -22,7 +22,11 @@ void web_interface::set_effects_info(effect_information* infos)
 void web_interface::on_index()
 {
     Serial.println("web_interface::on_index");
-    server.send(200, "text/html", this->infos[0].name);
+    String txt = this->infos[0].name;
+    txt += "<br />";
+    txt += this->infos[1].name;
+
+    server.send(200, "text/html", txt);
 }
 
 void web_interface::periodic()

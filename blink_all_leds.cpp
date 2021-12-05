@@ -3,6 +3,7 @@
 effect_information blink_all_leds::get_info()
 {
     effect_information info;
+    info.id = "blink_all_leds";
     info.name = "Blink all leds";
     info.description = "Turn on and off all leds";
     info.init = std::bind(&blink_all_leds::init, this, std::placeholders::_1);
@@ -23,8 +24,11 @@ void blink_all_leds::init(Adafruit_NeoPixel& pixels) {
 }
 
 void blink_all_leds::periodic(int64_t time_elapsed) {
+    Serial.println(time_elapsed);
+    Serial.println(this->counter);
+
     this->counter += time_elapsed;
-    if(this->counter > 1000)
+    if(this->counter > 500000)
     {
         if(this->on)
         {

@@ -4,6 +4,7 @@
 #include <functional>
 
 struct effect_information {
+    const char* id;
     const char* name;
     const char* description;
     std::function<void(Adafruit_NeoPixel&)> init;
