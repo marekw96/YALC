@@ -14,17 +14,21 @@ bool web_interface::initialise()
     return true;
 }
 
-void web_interface::set_effects_info(effect_information* infos)
+void web_interface::set_effect_manager(effect_manager& effects)
 {
-    this->infos = infos;
+    this->effects = &effects;
 }
 
 void web_interface::on_index()
 {
     Serial.println("web_interface::on_index");
-    String txt = this->infos[0].name;
-    txt += "<br />";
-    txt += this->infos[1].name;
+    String txt = "";
+Serial.println(this->effects->get_number_of_effects());
+    for(int i = 0; i < this->effects->get_number_of_effects(); ++i)
+    {
+        txt += "<br />";
+        txt += this->effects->get_effects()[i].name;
+    }
 
     server.send(200, "text/html", txt);
 }
