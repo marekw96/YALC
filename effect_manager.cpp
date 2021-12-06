@@ -2,16 +2,19 @@
 
 #include "blink_all_leds.hpp"
 #include "brethe_leds.hpp"
+#include "brethe_colors.hpp"
 
 blink_all_leds blink_all_leds_obj;
 brethe_leds brethe_leds_obj;
+brethe_colors brethe_colors_obj;
 
-effect_information infos[2];
+effect_information infos[3];
 
 effect_manager::effect_manager()
 {
     infos[0] = blink_all_leds_obj.get_info();
     infos[1] = brethe_leds_obj.get_info();
+    infos[2] = brethe_colors_obj.get_info();
 
     this->current_effect = &infos[0];
     this->number_of_effects = sizeof(infos) / sizeof(infos[0]);
