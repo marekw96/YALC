@@ -25,9 +25,6 @@ void brethe_leds::init(Adafruit_NeoPixel& pixels) {
 }
 
 void brethe_leds::periodic(int64_t time_elapsed) {
-    Serial.println(time_elapsed);
-    Serial.println(this->counter);
-
     this->counter += time_elapsed;
     if(this->counter > 50000)
     {

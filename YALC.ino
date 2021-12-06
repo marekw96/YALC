@@ -40,6 +40,7 @@ void setup() {
 
     pixels.begin();
 
+    effects.set_pixels(pixels);
     effects.get_current_effect().init(pixels);
 
     last_time_read = esp_timer_get_time();

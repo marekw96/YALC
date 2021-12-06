@@ -29,3 +29,26 @@ uint64_t effect_manager::get_number_of_effects() {
 effect_information* effect_manager::get_effects() {
     return this->effects;
 }
+
+bool effect_manager::change_effect_to(const char* effect_id) {
+    String id = effect_id;
+    for(int i = 0; i < this->number_of_effects; ++i)
+    {
+        if(id == this->effects[i].id)
+        {
+            this->current_effect->deinit();
+
+            this->current_effect = &this->effects[i];
+            this->current_effect->init(*this->pixels);
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void effect_manager::set_pixels(Adafruit_NeoPixel& pixels)
+{
+    this->pixels = &pixels;
+}
