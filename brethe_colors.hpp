@@ -1,13 +1,7 @@
 #pragma once
 
 #include "effect_information.hpp"
-
-struct RGB
-{
-    uint8_t R;
-    uint8_t G;
-    uint8_t B;
-};
+#include "rgb.hpp"
 
 class brethe_colors {
 public:
@@ -19,7 +13,8 @@ public:
 
     Adafruit_NeoPixel* pixels;
     int64_t counter;
-    float current_color_R, current_color_G, current_color_B;
+    RGB_t<float> step;
+    int steps;
     RGB first_color;
     RGB second_color;
     uint8_t step_counter;

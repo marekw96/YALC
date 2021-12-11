@@ -21,43 +21,44 @@ void brethe_colors::init(Adafruit_NeoPixel& pixels) {
 
     this->counter = 0;
     this->step_counter = 0;
-    this->first_color = {255, 0, 0}; //RED
-    this->second_color = {0, 255, 0}; //GREEN
-    this->current_color_R = this->first_color.R;
-    this->current_color_G = this->first_color.G;
-    this->current_color_B = this->first_color.B;
+    this->second_color = {255, 0, 0}; //RED
+    this->first_color = {0, 255, 0}; //GREEN
+    this->steps = 25;
+
+    this->step.R = (this->second_color.R - this->first_color.R)/this->steps;
+    this->step.G = (this->second_color.G - this->first_color.G)/this->steps;
+    this->step.B = (this->second_color.B - this->first_color.B)/this->steps;
 
     for(int i = 0; i < 25; ++i)
-        this->pixels->setPixelColor(i, this->pixels->Color((uint8_t)this->current_color_G, (uint8_t)this->current_color_R, (uint8_t)this->current_color_B));
+        this->pixels->setPixelColor(i, this->pixels->Color(this->first_color.G, this->first_color.R, this->first_color.B));
 }
 
 void brethe_colors::periodic(int64_t time_elapsed) {
     this->counter += time_elapsed;
-    int steps = 25;
-    if(this->counter > 200000)
+
+    if(this->counter > 200000)// 0.2 sec
     {
         ++this->step_counter;
 
-        RGB step = {0,0,0};
-        float step_R, step_G, step_B;
-        step_R = (this->second_color.R - this->first_color.R)/steps;
-        step_G = (this->second_color.G - this->first_color.G)/steps;
-        step_B = (this->second_color.B - this->first_color.B)/steps;
+        RGB_t<float> current_color;
+        current_color.R = this->step_counter * this->step.R;
+        current_color.G = this->step_counter * this->step.G;
+        current_color.B = this->step_counter * this->step.B;
 
-        this->current_color_R += step_R;
-        this->current_color_G += step_G;
-        this->current_color_B += step_B;
-
-        if(this->step_counter == steps)
+        if(this->step_counter == this->steps)
         {
             auto temp = this->second_color;
             this->second_color = this->first_color;
             this->first_color = temp;
             this->step_counter = 0;
+
+            this->step.R = (this->second_color.R - this->first_color.R)/this->steps;
+            this->step.G = (this->second_color.G - this->first_color.G)/this->steps;
+            this->step.B = (this->second_color.B - this->first_color.B)/this->steps;
         }
 
         for(int i = 0; i < 25; ++i)
-            this->pixels->setPixelColor(i, this->pixels->Color((uint8_t)this->current_color_G, (uint8_t)this->current_color_R, (uint8_t)this->current_color_B));
+            this->pixels->setPixelColor(i, this->pixels->Color((uint8_t)current_color.G, (uint8_t)current_color.R, (uint8_t)current_color.B));
 
         this->pixels->show();
         this->counter = 0;

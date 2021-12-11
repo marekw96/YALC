@@ -1,7 +1,10 @@
 #pragma once
 
-struct RGB {
-    uint8_t R;
-    uint8_t G;
-    uint8_t B;
+template <typename T>
+struct RGB_t {
+    T R;
+    T G;
+    T B;
 };
+
+using RGB = RGB_t<uint8_t>;
