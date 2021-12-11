@@ -4,20 +4,23 @@
 #include "brethe_leds.hpp"
 #include "brethe_colors.hpp"
 #include "random_leds.hpp"
+#include "off_leds.hpp"
 
 blink_all_leds blink_all_leds_obj;
 brethe_leds brethe_leds_obj;
 brethe_colors brethe_colors_obj;
 random_leds random_leds_obj;
+off_leds off_leds_obj;
 
-effect_information infos[4];
+effect_information infos[5];
 
 effect_manager::effect_manager()
 {
-    infos[0] = blink_all_leds_obj.get_info();
-    infos[1] = brethe_leds_obj.get_info();
-    infos[2] = brethe_colors_obj.get_info();
-    infos[3] = random_leds_obj.get_info();
+    infos[0] = off_leds_obj.get_info();
+    infos[1] = blink_all_leds_obj.get_info();
+    infos[2] = brethe_leds_obj.get_info();
+    infos[3] = brethe_colors_obj.get_info();
+    infos[4] = random_leds_obj.get_info();
 
     this->current_effect = &infos[0];
     this->number_of_effects = sizeof(infos) / sizeof(infos[0]);
