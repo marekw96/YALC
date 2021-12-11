@@ -1,4 +1,21 @@
 #include "random_leds.hpp"
+#include "rgb.hpp"
+
+RGB colors[] = {
+    {255, 0, 0}, // red
+    {0, 255, 0}, // green
+    {0, 0, 255}, // blue
+    {255, 255, 255}, // white
+    {255, 255, 0},
+    {255, 0, 255},
+    {0, 255, 255},
+    {0, 180, 255},
+    {180, 0, 255},
+    {255, 180, 0},
+    {0, 255, 180}
+};
+
+uint8_t num_colors = sizeof(colors) / sizeof(colors[0]);
 
 effect_information random_leds::get_info()
 {
@@ -24,15 +41,19 @@ void random_leds::init(Adafruit_NeoPixel& pixels) {
     this->counter = 0;
 
     for(int i = 0; i < 25; ++i)
-        this->pixels->setPixelColor(i, this->pixels->Color(random(0, 255), random(0, 255), random(0, 255)));
+    {
+        auto& color = colors[random(0, num_colors)];
+        this->pixels->setPixelColor(i, this->pixels->Color(color.G, color.R, color.B));
+    }
 }
 
 void random_leds::periodic(int64_t time_elapsed) {
     this->counter += time_elapsed;
-    int steps = 25;
+
     if(this->counter > 200000)
     {
-        this->pixels->setPixelColor(random(0, 25), this->pixels->Color(random(0, 255), random(0, 255), random(0, 255)));
+        auto& color = colors[random(0, num_colors)];
+        this->pixels->setPixelColor(random(0, 25), this->pixels->Color(color.G, color.R, color.B));
 
         this->pixels->show();
         this->counter = 0;
