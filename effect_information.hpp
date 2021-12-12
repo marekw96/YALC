@@ -14,5 +14,6 @@ struct effect_information {
     std::function<void(int64_t)> periodic;
     std::function<void(void)> deinit;
     std::function<bool(const String&, const String&)> set_parameter;
+    std::function<String(const String&)> get_parameter;
     view<effect_parameter> parameters;
 };

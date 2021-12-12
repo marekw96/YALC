@@ -101,3 +101,13 @@ bool effect_manager::set_effect_parameter(const String& name, const String& valu
 
     return false;
 }
+
+String effect_manager::get_effect_parameter(const String& name)
+{
+    if(this->current_effect->get_parameter)
+    {
+        return this->current_effect->get_parameter(name);
+    }
+
+    return "";
+}

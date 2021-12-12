@@ -26,6 +26,7 @@ effect_information blink_all_leds::get_info()
     info.periodic = std::bind(&blink_all_leds::periodic, this, std::placeholders::_1);
     info.deinit = std::bind(&blink_all_leds::deinit, this);
     info.set_parameter = std::bind(&blink_all_leds::set_parameter, this, std::placeholders::_1, std::placeholders::_2);
+    info.get_parameter = std::bind(&blink_all_leds::get_parameter, this, std::placeholders::_1);
 
     return info;
 }
@@ -64,10 +65,6 @@ void blink_all_leds::periodic(int64_t time_elapsed) {
 }
 
 bool blink_all_leds::set_parameter(const String& name, const String& value) {
-    Serial.print(name);
-    Serial.print(": ");
-    Serial.println(value);
-
     if(name == "first_color")
     {
         if(value[0] != '#' || value.length() != 7)
@@ -92,6 +89,41 @@ bool blink_all_leds::set_parameter(const String& name, const String& value) {
     }
 
     return false;
+}
+
+String blink_all_leds::get_parameter(const String& name) {
+    if(name == "first_color")
+    {
+        String ret = "#";
+        if(this->first_color.R < 16)
+            ret += '0';
+        ret += String(this->first_color.R, HEX);
+        if(this->first_color.G < 16)
+            ret += '0';
+        ret += String(this->first_color.G, HEX);
+        if(this->first_color.B < 16)
+            ret += '0';
+        ret += String(this->first_color.B, HEX);
+
+        return ret;
+    }
+    else if(name == "second_color")
+    {
+        String ret = "#";
+        if(this->second_color.R < 16)
+            ret += '0';
+        ret += String(this->second_color.R, HEX);
+        if(this->second_color.G < 16)
+            ret += '0';
+        ret += String(this->second_color.G, HEX);
+        if(this->second_color.B < 16)
+            ret += '0';
+        ret += String(this->second_color.B, HEX);
+
+        return ret;
+    }
+
+    return {};
 }
 
 void blink_all_leds::deinit() {}

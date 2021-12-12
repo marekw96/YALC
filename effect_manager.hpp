@@ -16,6 +16,7 @@ public:
     view<effect_parameter> get_effect_parameters(const char* effect_id);
     bool set_effect_parameter(const String& name, const String& value);
     bool effect_with_id_exists(const String& effect_id);
+    String get_effect_parameter(const String& name);
 
 private:
     effect_information* effects;

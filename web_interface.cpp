@@ -85,7 +85,7 @@ void web_interface::on_index()
                     txt += " <input type=\"color\" name=\"";
                     txt += effect.id;
                     txt += "\" value=\"";
-                    txt += effect.default_value;
+                    txt += this->effects->get_effect_parameter(effect.id);
                     txt += "\"><br />";
                 break;
                 default:
