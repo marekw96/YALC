@@ -67,23 +67,19 @@ void blink_all_leds::periodic(int64_t time_elapsed) {
 bool blink_all_leds::set_parameter(const String& name, const String& value) {
     if(name == "first_color")
     {
-        if(value[0] != '#' || value.length() != 7)
+        if(!is_rgb_string_valid(value.c_str()))
             return false;
 
-        this->first_color.R = strtol(value.substring(1,3).c_str(), NULL, 16);
-        this->first_color.G = strtol(value.substring(3,5).c_str(), NULL, 16);
-        this->first_color.B = strtol(value.substring(5,7).c_str(), NULL, 16);
+        this->first_color = to_rgb(value.c_str());
 
         return true;
     }
     else if(name == "second_color")
     {
-        if(value[0] != '#' || value.length() != 7)
+        if(!is_rgb_string_valid(value.c_str()))
             return false;
 
-        this->second_color.R = strtol(value.substring(1,3).c_str(), NULL, 16);
-        this->second_color.G = strtol(value.substring(3,5).c_str(), NULL, 16);
-        this->second_color.B = strtol(value.substring(5,7).c_str(), NULL, 16);
+        this->second_color = to_rgb(value.c_str());
 
         return true;
     }
@@ -94,33 +90,11 @@ bool blink_all_leds::set_parameter(const String& name, const String& value) {
 String blink_all_leds::get_parameter(const String& name) {
     if(name == "first_color")
     {
-        String ret = "#";
-        if(this->first_color.R < 16)
-            ret += '0';
-        ret += String(this->first_color.R, HEX);
-        if(this->first_color.G < 16)
-            ret += '0';
-        ret += String(this->first_color.G, HEX);
-        if(this->first_color.B < 16)
-            ret += '0';
-        ret += String(this->first_color.B, HEX);
-
-        return ret;
+        return to_hex_string(this->first_color).c_str();
     }
     else if(name == "second_color")
     {
-        String ret = "#";
-        if(this->second_color.R < 16)
-            ret += '0';
-        ret += String(this->second_color.R, HEX);
-        if(this->second_color.G < 16)
-            ret += '0';
-        ret += String(this->second_color.G, HEX);
-        if(this->second_color.B < 16)
-            ret += '0';
-        ret += String(this->second_color.B, HEX);
-
-        return ret;
+        return to_hex_string(this->second_color).c_str();
     }
 
     return {};
