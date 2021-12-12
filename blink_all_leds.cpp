@@ -3,7 +3,7 @@
 #include "effect_parameter.hpp"
 #include "view.hpp"
 
-effect_parameter params[] = {
+static effect_parameter params[] = {
     {.name = "first color", .id="first_color", .default_value = "#960096", .type = EFFECT_TYPE::COLOR},
     {.name = "second color", .id="second_color", .default_value = "#000000", .type = EFFECT_TYPE::COLOR},
 };
