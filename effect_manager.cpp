@@ -64,3 +64,40 @@ void effect_manager::set_pixels(Adafruit_NeoPixel& pixels)
 {
     this->pixels = &pixels;
 }
+
+view<effect_parameter> effect_manager::get_effect_parameters(const char* effect_id)
+{
+    String id = effect_id;
+    for(int i = 0; i < this->number_of_effects; ++i)
+    {
+        if(id == this->effects[i].id)
+        {
+            return this->effects[i].parameters;
+        }
+    }
+
+    return {};
+}
+
+bool effect_manager::effect_with_id_exists(const String& effect_id) {
+
+    for(int i = 0; i < this->number_of_effects; ++i)
+    {
+        if(effect_id == this->effects[i].id)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool effect_manager::set_effect_parameter(const String& name, const String& value)
+{
+    if(this->current_effect->set_parameter)
+    {
+        return this->current_effect->set_parameter(name, value);
+    }
+
+    return false;
+}
