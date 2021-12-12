@@ -1,14 +1,29 @@
 #include "filling_leds.hpp"
 
+static effect_parameter params[] = {
+    {.name = "first color", .id="first_color", .default_value = "#ff00ff", .type = EFFECT_TYPE::COLOR},
+    {.name = "second color", .id="second_color", .default_value = "#000000", .type = EFFECT_TYPE::COLOR},
+};
+
+filling_leds::filling_leds() {
+    for(int i = 0; i < sizeof(params)/sizeof(params[0]); ++i)
+    {
+        this->set_parameter(params[i].id, params[i].default_value);
+    }
+}
+
 effect_information filling_leds::get_info()
 {
     effect_information info;
     info.id = "filling_leds";
     info.name = "Filling";
     info.description = "Filling from one end";
+    info.parameters = view<effect_parameter>(params, sizeof(params) / sizeof(params[0]));
     info.init = std::bind(&filling_leds::init, this, std::placeholders::_1);
     info.periodic = std::bind(&filling_leds::periodic, this, std::placeholders::_1);
     info.deinit = std::bind(&filling_leds::deinit, this);
+    info.set_parameter = std::bind(&filling_leds::set_parameter, this, std::placeholders::_1, std::placeholders::_2);
+    info.get_parameter = std::bind(&filling_leds::get_parameter, this, std::placeholders::_1);
 
     return info;
 }
@@ -19,8 +34,6 @@ void filling_leds::init(Adafruit_NeoPixel& pixels) {
     this->pixels = &pixels;
     this->pixels->clear();
 
-    this->first_color = {255,255,255};
-    this->second_color = {255, 0, 0};
     this->current_position = 24;
     this->filled = 0;
 
@@ -62,6 +75,42 @@ void filling_leds::periodic(int64_t time_elapsed) {
         this->pixels->show();
         this->counter = 0;
     }
+}
+
+bool filling_leds::set_parameter(const String& name, const String& value) {
+    if(name == "first_color")
+    {
+        if(!is_rgb_string_valid(value.c_str()))
+            return false;
+
+        this->first_color = to_rgb(value.c_str());
+
+        return true;
+    }
+    else if(name == "second_color")
+    {
+        if(!is_rgb_string_valid(value.c_str()))
+            return false;
+
+        this->second_color = to_rgb(value.c_str());
+
+        return true;
+    }
+
+    return false;
+}
+
+String filling_leds::get_parameter(const String& name) {
+    if(name == "first_color")
+    {
+        return to_hex_string(this->first_color).c_str();
+    }
+    else if(name == "second_color")
+    {
+        return to_hex_string(this->second_color).c_str();
+    }
+
+    return {};
 }
 
 void filling_leds::deinit() {}
