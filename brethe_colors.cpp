@@ -8,13 +8,6 @@ static effect_parameter params[] = {
     {.name = "second color", .id="second_color", .default_value = "#000000", .type = EFFECT_TYPE::COLOR},
 };
 
-brethe_colors::brethe_colors() {
-    for(int i = 0; i < sizeof(params)/sizeof(params[0]); ++i)
-    {
-        this->set_parameter(params[i].id, params[i].default_value);
-    }
-}
-
 effect_information brethe_colors::get_info()
 {
     effect_information info;

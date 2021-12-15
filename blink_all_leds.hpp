@@ -5,7 +5,6 @@
 
 class blink_all_leds {
 public:
-    blink_all_leds();
     effect_information get_info();
 
     void init(Adafruit_NeoPixel& pixels);

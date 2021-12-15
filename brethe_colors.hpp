@@ -5,7 +5,6 @@
 
 class brethe_colors {
 public:
-    brethe_colors();
     effect_information get_info();
 
     void init(Adafruit_NeoPixel& pixels);

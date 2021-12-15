@@ -8,13 +8,6 @@ static effect_parameter params[] = {
     {.name = "second color", .id="second_color", .default_value = "#000000", .type = EFFECT_TYPE::COLOR},
 };
 
-blink_all_leds::blink_all_leds() {
-    for(int i = 0; i < sizeof(params)/sizeof(params[0]); ++i)
-    {
-        this->set_parameter(params[i].id, params[i].default_value);
-    }
-}
-
 effect_information blink_all_leds::get_info()
 {
     effect_information info;

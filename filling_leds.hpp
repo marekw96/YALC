@@ -5,7 +5,6 @@
 
 class filling_leds {
 public:
-    filling_leds();
     effect_information get_info();
 
     void init(Adafruit_NeoPixel& pixels);
