@@ -7,11 +7,13 @@
 
 #include "effect_manager.hpp"
 #include "effect_information.hpp"
+#include "config_manager.hpp"
 
 web_interface web;
 
-Adafruit_NeoPixel pixels(25, 13, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel pixels(25, 16, NEO_GRB + NEO_KHZ800);
 effect_manager effects;
+config_manager cfg_manager;
 
 int64_t last_time_read;
 
@@ -20,6 +22,11 @@ void setup() {
 
     esp_timer_init();
     Serial.println("Timer init done.");
+
+    if(cfg_manager.begin())
+        Serial.println("CFG manager done.");
+    else
+        Serial.println("CFG manager begin failed.");
 
     Serial.println("Connecting to ");
     Serial.println(wifi_ssid);
@@ -41,7 +48,9 @@ void setup() {
     pixels.begin();
 
     effects.set_pixels(pixels);
+    effects.set_config_manager(cfg_manager);
     effects.get_current_effect().init(pixels);
+    effects.restore_effect_parameters();
 
     last_time_read = esp_timer_get_time();
 }

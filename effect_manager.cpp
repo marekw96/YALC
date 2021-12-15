@@ -62,6 +62,10 @@ void effect_manager::set_pixels(Adafruit_NeoPixel& pixels)
     this->pixels = &pixels;
 }
 
+void effect_manager::set_config_manager(config_manager& cfg_manager){
+    this->cfg_manager = &cfg_manager;
+}
+
 view<effect_parameter> effect_manager::get_effect_parameters(const char* effect_id)
 {
     String id = effect_id;
@@ -77,7 +81,6 @@ view<effect_parameter> effect_manager::get_effect_parameters(const char* effect_
 }
 
 bool effect_manager::effect_with_id_exists(const String& effect_id) {
-
     for(int i = 0; i < this->number_of_effects; ++i)
     {
         if(effect_id == this->effects[i].id)
@@ -91,9 +94,11 @@ bool effect_manager::effect_with_id_exists(const String& effect_id) {
 
 bool effect_manager::set_effect_parameter(const String& name, const String& value)
 {
-    if(this->current_effect->set_parameter)
-    {
-        return this->current_effect->set_parameter(name, value);
+    if(this->current_effect->set_parameter){
+        if(this->current_effect->set_parameter(name, value)) {
+            this->cfg_manager->store_value(this->current_effect->id, name.c_str(), value.c_str());
+            return true;
+        }
     }
 
     return false;
@@ -107,4 +112,22 @@ String effect_manager::get_effect_parameter(const String& name)
     }
 
     return "";
+}
+
+void effect_manager::restore_effect_parameters() {
+    for(int effect_idx = 0; effect_idx < this->number_of_effects; ++effect_idx) {
+        auto& effect = this->effects[effect_idx];
+
+        for(int param_idx = 0; param_idx < effect.parameters.size(); ++param_idx) {
+            auto& parameter = effect.parameters[param_idx];
+
+            auto value = this->cfg_manager->read_value(effect.id, parameter.id);
+            if(value.isEmpty())
+            {
+                value = parameter.default_value;
+            }
+
+            effect.set_parameter(parameter.id, value);
+        }
+    }
 }
