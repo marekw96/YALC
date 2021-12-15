@@ -55,7 +55,11 @@ void web_interface::on_index()
         }
         else {
             Serial.println("Effect doesn't exists");
+            effect_parameters = this->effects->get_current_effect().parameters;
         }
+    }
+    else {
+        effect_parameters = this->effects->get_current_effect().parameters;
     }
 
     Serial.println("web_interface::on_index");
