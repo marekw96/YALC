@@ -30,8 +30,7 @@ void web_interface::on_index()
         String effect_name;
         Serial.println("GET");
         for (uint8_t i=0; i<server.args(); i++) {
-            Serial.println(server.argName(i));
-            Serial.println(server.arg(i));
+            Serial.printf("Arg name: %s, arg value: %s\n\r", server.argName(i), server.arg(i));
             if(server.argName(i) == "id")
             {
                 if(this->effects->effect_with_id_exists(server.arg(i).c_str()))
