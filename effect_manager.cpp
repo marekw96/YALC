@@ -50,6 +50,8 @@ bool effect_manager::change_effect_to(const char* effect_id) {
             this->current_effect = &this->effects[i];
             this->current_effect->init(*this->pixels);
 
+            this->cfg_manager->store_value("config", "last_used", this->current_effect->id);
+
             return true;
         }
     }
@@ -57,13 +59,13 @@ bool effect_manager::change_effect_to(const char* effect_id) {
     return false;
 }
 
-void effect_manager::set_pixels(Adafruit_NeoPixel& pixels)
-{
+void effect_manager::set_pixels(Adafruit_NeoPixel& pixels) {
     this->pixels = &pixels;
 }
 
 void effect_manager::set_config_manager(config_manager& cfg_manager){
     this->cfg_manager = &cfg_manager;
+    this->change_effect_to(this->cfg_manager->read_value("config", "last_used").c_str());
 }
 
 view<effect_parameter> effect_manager::get_effect_parameters(const char* effect_id)
