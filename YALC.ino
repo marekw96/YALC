@@ -11,13 +11,15 @@
 
 web_interface web;
 
-Adafruit_NeoPixel pixels(25, 16, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel pixels(LEDS_NUM, 16, NEO_GRB + NEO_KHZ800);
 effect_manager effects;
 config_manager cfg_manager;
 
 int64_t last_time_read;
 
 void setup() {
+    int wifi_attempts = 10;
+
     Serial.begin(115200);
 
     esp_timer_init();
@@ -36,10 +38,20 @@ void setup() {
     while (WiFi.status() != WL_CONNECTED) {
         delay(1000);
         Serial.print(".");
+
+        if(--wifi_attempts == 0)
+            break;
     }
 
-    Serial.println("WiFi connected..!");
-    Serial.print("Got IP: ");  Serial.println(WiFi.localIP());
+    if(wifi_attempts) {
+        Serial.println("WiFi connected..!");
+        Serial.print("Got IP: ");  Serial.println(WiFi.localIP());
+    }
+    else {
+        WiFi.softAP(soft_wifi_ssid, soft_password);
+        Serial.println("Access point started!");
+        Serial.print("Got IP: ");  Serial.println(WiFi.softAPIP());
+    }
 
     web.initialise();
     web.set_effect_manager(effects);
