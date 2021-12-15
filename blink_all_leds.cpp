@@ -40,13 +40,13 @@ void blink_all_leds::periodic(int64_t time_elapsed) {
     {
         if(this->on)
         {
-            for(int i = 0; i < 25; ++i)
+            for(int i = 0; i < this->pixels->numPixels(); ++i)
                 this->pixels->setPixelColor(i, this->pixels->Color(this->second_color.G, this->second_color.R, this->second_color.B));
             this->on = false;
         }
         else
         {
-            for(int i = 0; i < 25; ++i)
+            for(int i = 0; i < this->pixels->numPixels(); ++i)
                 this->pixels->setPixelColor(i, this->pixels->Color(this->first_color.G, this->first_color.R, this->first_color.B));
 
             this->on = true;

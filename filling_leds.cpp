@@ -27,10 +27,10 @@ void filling_leds::init(Adafruit_NeoPixel& pixels) {
     this->pixels = &pixels;
     this->pixels->clear();
 
-    this->current_position = 24;
+    this->current_position = this->pixels->numPixels() - 1;
     this->filled = 0;
 
-    for(int i = 0; i < 25; ++i)
+    for(int i = 0; i < this->pixels->numPixels(); ++i)
         this->pixels->setPixelColor(i, this->pixels->Color(this->first_color.G, this->first_color.R, this->first_color.B));
 
     this->pixels->show();
@@ -41,7 +41,7 @@ void filling_leds::periodic(int64_t time_elapsed) {
     this->counter += time_elapsed;
     if(this->counter > 300000) //0.3s
     {
-        if(this->current_position != 24)
+        if(this->current_position != this->pixels->numPixels() - 1)
         {
             this->pixels->setPixelColor(this->current_position+1, this->pixels->Color(this->first_color.G, this->first_color.R, this->first_color.B));
         }
@@ -52,17 +52,17 @@ void filling_leds::periodic(int64_t time_elapsed) {
         if(this->current_position == (this->filled-1))
         {
             ++this->filled;
-            this->current_position = 24;
+            this->current_position = this->pixels->numPixels() - 1;
         }
 
-        if(this->filled == 24)
+        if(this->filled == this->pixels->numPixels() -1)
         {
             auto tmp = this->first_color;
             this->first_color = this->second_color;
             this->second_color = tmp;
 
             this->filled = 0;
-            this->current_position = 24;
+            this->current_position = this->pixels->numPixels() - 1;
         }
 
         this->pixels->show();

@@ -36,7 +36,7 @@ void random_leds::init(Adafruit_NeoPixel& pixels) {
 
     this->counter = 0;
 
-    for(int i = 0; i < 25; ++i)
+    for(int i = 0; i < this->pixels->numPixels(); ++i)
     {
         auto& color = colors[random(0, num_colors)];
         this->pixels->setPixelColor(i, this->pixels->Color(color.G, color.R, color.B));
@@ -49,7 +49,7 @@ void random_leds::periodic(int64_t time_elapsed) {
     if(this->counter > 200000)
     {
         auto& color = colors[random(0, num_colors)];
-        this->pixels->setPixelColor(random(0, 25), this->pixels->Color(color.G, color.R, color.B));
+        this->pixels->setPixelColor(random(0, this->pixels->numPixels()), this->pixels->Color(color.G, color.R, color.B));
 
         this->pixels->show();
         this->counter = 0;

@@ -38,7 +38,7 @@ void brethe_colors::init(Adafruit_NeoPixel& pixels) {
     this->step.G = (this->second_color.G - this->first_color.G)/this->steps;
     this->step.B = (this->second_color.B - this->first_color.B)/this->steps;
 
-    for(int i = 0; i < 25; ++i)
+    for(int i = 0; i < this->pixels->numPixels(); ++i)
         this->pixels->setPixelColor(i, this->pixels->Color(this->first_color.G, this->first_color.R, this->first_color.B));
 }
 
@@ -66,7 +66,7 @@ void brethe_colors::periodic(int64_t time_elapsed) {
             this->step.B = (this->second_color.B - this->first_color.B)/static_cast<float>(this->steps);
         }
 
-        for(int i = 0; i < 25; ++i)
+        for(int i = 0; i < this->pixels->numPixels(); ++i)
             this->pixels->setPixelColor(i, this->pixels->Color((uint8_t)current_color.G, (uint8_t)current_color.R, (uint8_t)current_color.B));
 
         this->pixels->show();
