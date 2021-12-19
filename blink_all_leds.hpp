@@ -18,4 +18,5 @@ public:
     bool on;
     RGB first_color;
     RGB second_color;
+    uint64_t timeout_ns;
 };

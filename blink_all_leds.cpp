@@ -6,6 +6,7 @@
 static effect_parameter params[] = {
     {"first color", "first_color", "#960096", EFFECT_TYPE::COLOR},
     {"second color", "second_color", "#000000",  EFFECT_TYPE::COLOR},
+    {"Speed", "speed", "normal", EFFECT_TYPE::SELECT, "slow;normal;fast;"}
 };
 
 effect_information blink_all_leds::get_info()
@@ -36,7 +37,7 @@ void blink_all_leds::init(Adafruit_NeoPixel& pixels) {
 
 void blink_all_leds::periodic(int64_t time_elapsed) {
     this->counter += time_elapsed;
-    if(this->counter > 500000)
+    if(this->counter > this->timeout_ns)
     {
         if(this->on)
         {
@@ -76,6 +77,19 @@ bool blink_all_leds::set_parameter(const String& name, const String& value) {
 
         return true;
     }
+    else if(name == "speed")
+    {
+        if(value == "fast")
+            this->timeout_ns = 250000;
+        else if(value == "normal")
+            this->timeout_ns = 500000;
+        else if(value == "slow")
+            this->timeout_ns = 750000;
+        else
+            return false;
+
+        return true;
+    }
 
     return false;
 }
@@ -88,6 +102,14 @@ String blink_all_leds::get_parameter(const String& name) {
     else if(name == "second_color")
     {
         return to_hex_string(this->second_color).c_str();
+    }
+    else if(name == "speed") {
+        if(this->timeout_ns == 250000)
+            return "fast";
+        else if(this->timeout_ns == 500000)
+            return "normal";
+        else if(this->timeout_ns == 750000)
+            return "slow";
     }
 
     return {};
