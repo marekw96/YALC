@@ -3,11 +3,49 @@
 #include <functional>
 
 #include "effect_parameter.hpp"
+#include "view.hpp"
 
 namespace {
+    String page_header() {
+        String html = "<!DOCTYPE html>"
+                      "<html lang=\"en\">"
+                      "<head>"
+                      "<title>YALC</title>"
+                      "<meta charset=\"utf-8\">"
+                      "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">"
+                      "</head>"
+                      "<body>";
+        return html;
+    }
+
+    String effects_to_html(view<effect_information> effects, const char* selected_id) {
+        String html = "Effects:<br />";
+        String selected = selected_id;
+
+        for(int i = 0; i < effects.size(); ++i)
+        {
+            html += "<a href=\"?id=";
+            html += effects[i].id;
+            html += "\">";
+            html += effects[i].name;
+            if(selected == effects[i].id)
+                html += " [Selected]";
+            html += "</a><br />";
+        }
+
+        return html;
+    }
+
+    String page_footer() {
+        String html = "</body>"
+                      "</html>";
+        return html;
+    }
+
     String select_paramter_to_html(const effect_parameter& param, const char* selected) {
-        String html = param.name;
-        html += "<select name=\"";
+        String html = "<td>";
+        html += param.name;
+        html += "</td><td><select name=\"";
         html += param.id;
         html += "\">";
 
@@ -30,7 +68,7 @@ namespace {
             pos = values.indexOf(';', last);
         }
 
-        html += "</select><br />";
+        html += "</select></td>";
 
         return html;
     }
@@ -94,34 +132,31 @@ void web_interface::on_index()
     }
 
     Serial.println("web_interface::on_index");
-    String txt = "";
+    String txt = page_header();
 
-    for(int i = 0; i < this->effects->get_number_of_effects(); ++i)
-    {
-        txt += "<a href=\"?id=";
-        txt += this->effects->get_effects()[i].id;
-        txt += "\">";
-        txt += this->effects->get_effects()[i].name;
-        txt += "</a><br />";
-    }
+    txt += effects_to_html({this->effects->get_effects(), this->effects->get_number_of_effects()}, this->effects->get_current_effect().id);
 
     if(effect_parameters)
     {
+        txt += "<br />Parameters:<br />";
         txt += "<form method=\"get\">";
         txt += "<input name=\"id\" type=\"hidden\" value=\"";
         txt += this->effects->get_current_effect().id;
         txt += "\">";
+        txt += "<table with=\"100%\">";
         for(int i =0; i < effect_parameters.size(); ++i)
         {
+            txt += "<tr>";
             auto& effect = effect_parameters[i];
             switch(effect.type) {
                 case EFFECT_TYPE::COLOR:
+                    txt += "<td>";
                     txt += effect.name;
-                    txt += " <input type=\"color\" name=\"";
+                    txt += "</td><td><input type=\"color\" name=\"";
                     txt += effect.id;
                     txt += "\" value=\"";
                     txt += this->effects->get_effect_parameter(effect.id);
-                    txt += "\"><br />";
+                    txt += "\"></td>";
                 break;
                 case EFFECT_TYPE::SELECT:
                     txt += select_paramter_to_html(effect, this->effects->get_effect_parameter(effect.id).c_str());
@@ -131,12 +166,15 @@ void web_interface::on_index()
                     txt += "<br />";
                 break;
             }
+            txt += "</tr>";
         }
-        txt += "<input type=\"submit\" value=\"Apply\"></form>";
+        txt += "</table><input type=\"submit\" value=\"Apply\"></form>";
     }
     else{
         txt += "No parameter for this effect";
     }
+
+    txt += page_footer();
 
     server.send(200, "text/html", txt);
 }
