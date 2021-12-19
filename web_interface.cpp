@@ -4,6 +4,38 @@
 
 #include "effect_parameter.hpp"
 
+namespace {
+    String select_paramter_to_html(const effect_parameter& param, const char* selected) {
+        String html = param.name;
+        html += "<select name=\"";
+        html += param.id;
+        html += "\">";
+
+        String values = param.values;
+        int last = 0;
+        int pos = values.indexOf(';', last);
+        while(pos != -1) {
+            String value = values.substring(last, pos);
+
+            html += "<option value=\"";
+            html += value;
+            html += "\"";
+            if(value == selected)
+                html += " selected";
+            html += ">";
+            html += value;
+            html += "</option>";
+
+            last = pos + 1;
+            pos = values.indexOf(';', last);
+        }
+
+        html += "<br />";
+
+        return html;
+    }
+}
+
 web_interface::web_interface()
     : server(80)
 {}
@@ -91,6 +123,8 @@ void web_interface::on_index()
                     txt += this->effects->get_effect_parameter(effect.id);
                     txt += "\"><br />";
                 break;
+                case EFFECT_TYPE::SELECT:
+                    txt += select_paramter_to_html(effect, this->effects->get_effect_parameter(effect.id).c_str());
                 default:
                     txt += effect.name;
                     txt += "<br />";

@@ -4,8 +4,8 @@
 #include "view.hpp"
 
 static effect_parameter params[] = {
-    {.name = "first color", .id="first_color", .default_value = "#960096", .type = EFFECT_TYPE::COLOR},
-    {.name = "second color", .id="second_color", .default_value = "#000000", .type = EFFECT_TYPE::COLOR},
+    {"first color", "first_color", "#960096", EFFECT_TYPE::COLOR},
+    {"second color", "second_color", "#000000",  EFFECT_TYPE::COLOR},
 };
 
 effect_information blink_all_leds::get_info()

@@ -4,7 +4,8 @@
 #include "view.hpp"
 
 static effect_parameter params[] = {
-    {.name = "Color", .id="color", .default_value = "#FFFFFF", .type = EFFECT_TYPE::COLOR}
+    {"Color", "color", "#FFFFFF", EFFECT_TYPE::COLOR},
+    {"Speed", "speed",  "normal", EFFECT_TYPE::SELECT, "slow;normal;fast;"}
 };
 
 effect_information sloping_leds::get_info()
@@ -60,7 +61,7 @@ void sloping_leds::periodic(int64_t time_elapsed) {
     };
 
     this->counter += time_elapsed;
-    if(this->counter > 50000)
+    if(this->counter > this->timeout_ns)
     {
         this->pixels->clear();
 
@@ -95,6 +96,19 @@ bool sloping_leds::set_parameter(const String& name, const String& value) {
 
         return true;
     }
+    else if(name == "speed")
+    {
+        if(value == "fast")
+            this->timeout_ns = 30000;
+        else if(value == "normal")
+            this->timeout_ns = 60000;
+        else if(value == "slow")
+            this->timeout_ns = 100000;
+        else
+            return false;
+
+        return true;
+    }
 
     return false;
 }
@@ -103,6 +117,16 @@ String sloping_leds::get_parameter(const String& name) {
     if(name == "color")
     {
         return to_hex_string(this->color).c_str();
+    }
+    else if(name == "speed") {
+        if(this->timeout_ns == 30000)
+            return "fast";
+        else if(this->timeout_ns == 60000)
+            return "normal";
+        else if(this->timeout_ns == 100000)
+            return "slow";
+        else
+            return "";
     }
 
     return {};

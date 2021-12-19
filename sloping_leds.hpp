@@ -23,4 +23,5 @@ private:
     int position;
     slope* slopes = nullptr;
     int num_of_slopes;
+    uint64_t timeout_ns;
 };
