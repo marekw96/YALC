@@ -6,6 +6,7 @@
 static effect_parameter params[] = {
     {.name = "first color", .id="first_color", .default_value = "#ff00ff", .type = EFFECT_TYPE::COLOR},
     {.name = "second color", .id="second_color", .default_value = "#000000", .type = EFFECT_TYPE::COLOR},
+    {"Speed", "speed",  "normal", EFFECT_TYPE::SELECT, "slow;normal;fast;"}
 };
 
 effect_information brethe_colors::get_info()
@@ -45,7 +46,7 @@ void brethe_colors::init(Adafruit_NeoPixel& pixels) {
 void brethe_colors::periodic(int64_t time_elapsed) {
     this->counter += time_elapsed;
 
-    if(this->counter > 50000)
+    if(this->counter > this->timeout_ns)
     {
         ++this->step_counter;
 
@@ -93,6 +94,19 @@ bool brethe_colors::set_parameter(const String& name, const String& value) {
 
         return true;
     }
+    else if(name == "speed")
+    {
+        if(value == "fast")
+            this->timeout_ns = 30000;
+        else if(value == "normal")
+            this->timeout_ns = 50000;
+        else if(value == "slow")
+            this->timeout_ns = 100000;
+        else
+            return false;
+
+        return true;
+    }
 
     return false;
 }
@@ -105,6 +119,16 @@ String brethe_colors::get_parameter(const String& name) {
     else if(name == "second_color")
     {
         return to_hex_string(this->second_color).c_str();
+    }
+    else if(name == "speed") {
+        if(this->timeout_ns == 30000)
+            return "fast";
+        else if(this->timeout_ns == 50000)
+            return "normal";
+        else if(this->timeout_ns == 100000)
+            return "slow";
+        else
+            return "";
     }
 
     return {};

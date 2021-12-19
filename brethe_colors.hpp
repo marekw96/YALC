@@ -20,4 +20,5 @@ public:
     RGB first_color;
     RGB second_color;
     uint8_t step_counter;
+    uint64_t timeout_ns;
 };
