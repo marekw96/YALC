@@ -19,4 +19,5 @@ public:
     RGB second_color;
     int current_position;
     int filled;
+    uint64_t timeout_ns;
 };

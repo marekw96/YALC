@@ -3,6 +3,7 @@
 static effect_parameter params[] = {
     {.name = "first color", .id="first_color", .default_value = "#ff00ff", .type = EFFECT_TYPE::COLOR},
     {.name = "second color", .id="second_color", .default_value = "#000000", .type = EFFECT_TYPE::COLOR},
+    {"Speed", "speed",  "normal", EFFECT_TYPE::SELECT, "slow;normal;fast;"}
 };
 
 effect_information filling_leds::get_info()
@@ -39,7 +40,7 @@ void filling_leds::init(Adafruit_NeoPixel& pixels) {
 
 void filling_leds::periodic(int64_t time_elapsed) {
     this->counter += time_elapsed;
-    if(this->counter > 300000) //0.3s
+    if(this->counter > this->timeout_ns)
     {
         if(this->current_position != this->pixels->numPixels() - 1)
         {
@@ -89,6 +90,18 @@ bool filling_leds::set_parameter(const String& name, const String& value) {
 
         return true;
     }
+    else if(name == "speed") {
+        if(value == "fast")
+            this->timeout_ns = 100000;
+        else if(value == "normal")
+            this->timeout_ns = 300000;
+        else if(value == "slow")
+            this->timeout_ns = 600000;
+        else
+            return false;
+
+        return true;
+    }
 
     return false;
 }
@@ -101,6 +114,16 @@ String filling_leds::get_parameter(const String& name) {
     else if(name == "second_color")
     {
         return to_hex_string(this->second_color).c_str();
+    }
+    else if(name == "speed") {
+        if(this->timeout_ns == 100000)
+            return "fast";
+        else if(this->timeout_ns == 300000)
+            return "normal";
+        else if(this->timeout_ns == 600000)
+            return "slow";
+        else
+            return "";
     }
 
     return {};
