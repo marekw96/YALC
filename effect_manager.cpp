@@ -5,14 +5,16 @@
 #include "random_leds.hpp"
 #include "off_leds.hpp"
 #include "filling_leds.hpp"
+#include "sloping_leds.hpp"
 
 blink_all_leds blink_all_leds_obj;
 brethe_colors brethe_colors_obj;
 random_leds random_leds_obj;
 off_leds off_leds_obj;
 filling_leds filling_leds_obj;
+sloping_leds sloping_leds_obj;
 
-effect_information infos[5];
+effect_information infos[6];
 
 effect_manager::effect_manager()
 {
@@ -21,6 +23,7 @@ effect_manager::effect_manager()
     infos[2] = brethe_colors_obj.get_info();
     infos[3] = random_leds_obj.get_info();
     infos[4] = filling_leds_obj.get_info();
+    infos[5] = sloping_leds_obj.get_info();
 
     this->current_effect = &infos[0];
     this->number_of_effects = sizeof(infos) / sizeof(infos[0]);
