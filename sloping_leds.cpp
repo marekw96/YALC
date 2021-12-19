@@ -26,6 +26,9 @@ effect_information sloping_leds::get_info()
 void sloping_leds::init(Adafruit_NeoPixel& pixels) {
     Serial.println("sloping_leds::init");
 
+    if(this->slopes)
+        this->deinit();
+
     this->pixels = &pixels;
     this->pixels->clear();
     this->pixels->show();
@@ -106,6 +109,9 @@ String sloping_leds::get_parameter(const String& name) {
 }
 
 void sloping_leds::deinit() {
-    if(slopes)
-        delete[] slopes;
+    if(this->slopes) {
+        delete[] this->slopes;
+
+        this->slopes = nullptr;
+    }
 }

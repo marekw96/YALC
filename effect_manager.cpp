@@ -99,6 +99,7 @@ bool effect_manager::effect_with_id_exists(const String& effect_id) {
 
 bool effect_manager::set_effect_parameter(const String& name, const String& value)
 {
+    Serial.printf("effect_manager::set_effect_parameter: name: %s, value: %s\n\r", name.c_str(), value.c_str());
     if(this->current_effect->set_parameter){
         if(this->current_effect->set_parameter(name, value)) {
             this->cfg_manager->store_value(this->current_effect->id, name.c_str(), value.c_str());

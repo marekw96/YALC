@@ -61,8 +61,8 @@ void setup() {
 
     effects.set_pixels(pixels);
     effects.set_config_manager(cfg_manager);
-    effects.get_current_effect().init(pixels);
     effects.restore_effect_parameters();
+    effects.get_current_effect().init(pixels);
 
     last_time_read = esp_timer_get_time();
 }
