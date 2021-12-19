@@ -30,7 +30,7 @@ namespace {
             pos = values.indexOf(';', last);
         }
 
-        html += "<br />";
+        html += "</select><br />";
 
         return html;
     }
@@ -125,6 +125,7 @@ void web_interface::on_index()
                 break;
                 case EFFECT_TYPE::SELECT:
                     txt += select_paramter_to_html(effect, this->effects->get_effect_parameter(effect.id).c_str());
+                break;
                 default:
                     txt += effect.name;
                     txt += "<br />";
