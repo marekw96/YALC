@@ -4,16 +4,16 @@
 #include "view.hpp"
 
 static effect_parameter params[] = {
-    {.name = "first color", .id="first_color", .default_value = "#ff00ff", .type = EFFECT_TYPE::COLOR},
-    {.name = "second color", .id="second_color", .default_value = "#000000", .type = EFFECT_TYPE::COLOR},
-    {"Speed", "speed",  "normal", EFFECT_TYPE::SELECT, "slow;normal;fast;"}
+    {.name = "Pierwszy kolor", .id="first_color", .default_value = "#ff00ff", .type = EFFECT_TYPE::COLOR},
+    {.name = "Drugi kolor", .id="second_color", .default_value = "#000000", .type = EFFECT_TYPE::COLOR},
+    {"Szybkosc", "speed",  "normalnie", EFFECT_TYPE::SELECT, "wolno;normalnie;szybko;"}
 };
 
 effect_information brethe_colors::get_info()
 {
     effect_information info;
     info.id = "brethe_colors";
-    info.name = "Brethe colors";
+    info.name = "Oddychanie";
     info.description = "Switch between colors smoothly";
     info.parameters = view<effect_parameter>(params, sizeof(params) / sizeof(params[0]));
     info.init = std::bind(&brethe_colors::init, this, std::placeholders::_1);
@@ -96,11 +96,11 @@ bool brethe_colors::set_parameter(const String& name, const String& value) {
     }
     else if(name == "speed")
     {
-        if(value == "fast")
+        if(value == "szybko")
             this->timeout_ns = 30000;
-        else if(value == "normal")
+        else if(value == "normalnie")
             this->timeout_ns = 50000;
-        else if(value == "slow")
+        else if(value == "wolno")
             this->timeout_ns = 100000;
         else
             return false;
@@ -122,11 +122,11 @@ String brethe_colors::get_parameter(const String& name) {
     }
     else if(name == "speed") {
         if(this->timeout_ns == 30000)
-            return "fast";
+            return "szybko";
         else if(this->timeout_ns == 50000)
-            return "normal";
+            return "normalnie";
         else if(this->timeout_ns == 100000)
-            return "slow";
+            return "wolno";
         else
             return "";
     }

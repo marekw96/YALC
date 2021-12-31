@@ -4,16 +4,16 @@
 #include "view.hpp"
 
 static effect_parameter params[] = {
-    {"first color", "first_color", "#960096", EFFECT_TYPE::COLOR},
-    {"second color", "second_color", "#000000",  EFFECT_TYPE::COLOR},
-    {"Speed", "speed", "normal", EFFECT_TYPE::SELECT, "slow;normal;fast;"}
+    {"Pierwszy kolor", "first_color", "#960096", EFFECT_TYPE::COLOR},
+    {"Drugi kolor", "second_color", "#000000",  EFFECT_TYPE::COLOR},
+    {"Szybkosc", "speed", "normalnie", EFFECT_TYPE::SELECT, "wolno;normalnie;szybko;"}
 };
 
 effect_information blink_all_leds::get_info()
 {
     effect_information info;
     info.id = "blink_all_leds";
-    info.name = "Blink all leds";
+    info.name = "Mruganie";
     info.description = "Turn on and off all leds";
     info.parameters = view<effect_parameter>(params, sizeof(params) / sizeof(params[0]));
     info.init = std::bind(&blink_all_leds::init, this, std::placeholders::_1);
@@ -79,11 +79,11 @@ bool blink_all_leds::set_parameter(const String& name, const String& value) {
     }
     else if(name == "speed")
     {
-        if(value == "fast")
+        if(value == "szybko")
             this->timeout_ns = 250000;
-        else if(value == "normal")
+        else if(value == "normalnie")
             this->timeout_ns = 500000;
-        else if(value == "slow")
+        else if(value == "wolno")
             this->timeout_ns = 750000;
         else
             return false;
@@ -105,11 +105,11 @@ String blink_all_leds::get_parameter(const String& name) {
     }
     else if(name == "speed") {
         if(this->timeout_ns == 250000)
-            return "fast";
+            return "szybko";
         else if(this->timeout_ns == 500000)
-            return "normal";
+            return "normalnie";
         else if(this->timeout_ns == 750000)
-            return "slow";
+            return "wolno";
     }
 
     return {};

@@ -3,6 +3,8 @@
 enum class EFFECT_TYPE : uint8_t {
     COLOR = 0,
     SELECT,
+    SWITCH,
+    TEXT
 };
 
 struct effect_parameter {

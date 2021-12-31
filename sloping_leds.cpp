@@ -3,16 +3,30 @@
 #include "effect_parameter.hpp"
 #include "view.hpp"
 
+#define ARRAY_SIZE(arr) (sizeof(arr)/sizeof(arr[0]))
+
 static effect_parameter params[] = {
-    {"Color", "color", "#FFFFFF", EFFECT_TYPE::COLOR},
-    {"Speed", "speed",  "normal", EFFECT_TYPE::SELECT, "slow;normal;fast;"}
+    {"Kolor", "color", "#FFFFFF", EFFECT_TYPE::COLOR},
+    {"Szybkosc", "speed",  "normal", EFFECT_TYPE::SELECT, "bardzo_wolno;wolniej;wolno;normalnie;szybko;"},
+    {"Zmienne kolory", "change_colors", "on", EFFECT_TYPE::SELECT, "on;off;"}
 };
+
+RGB predefined_colors[] = {
+    {0xFF, 0xFF, 0xFF},
+    {0xFF, 0, 0},
+    {0, 0, 0xFF},
+    {0, 0xFF, 0},
+    {0xFF, 0xFF, 0},
+    {0xFF, 0, 0xFF},
+    {0, 0xFF, 0xFF}
+};
+
 
 effect_information sloping_leds::get_info()
 {
     effect_information info;
     info.id = "sloping_leds";
-    info.name = "Sloping";
+    info.name = "Opadanie";
     info.description = "";
     info.parameters = view<effect_parameter>(params, sizeof(params) / sizeof(params[0]));
     info.init = std::bind(&sloping_leds::init, this, std::placeholders::_1);
@@ -39,11 +53,16 @@ void sloping_leds::init(Adafruit_NeoPixel& pixels) {
 
     this->num_of_slopes = this->pixels->numPixels()/10;
     this->slopes = new slope[this->num_of_slopes];
+    this->last_used_color = 0;
 
     for(int i = 0; i < this->num_of_slopes; ++i) {
         auto& slope = this->slopes[i];
 
-        slope.color = this->color;
+        if(this->change_colors)
+            slope.color = predefined_colors[(this->last_used_color++)%ARRAY_SIZE(predefined_colors)];
+        else
+            slope.color = this->color;
+
         slope.position = this->pixels->numPixels() + i * (this->pixels->numPixels() / this->num_of_slopes);
     }
 }
@@ -78,6 +97,9 @@ void sloping_leds::periodic(int64_t time_elapsed) {
 
             if(slope.position <= -5) {
                 slope.position = this->pixels->numPixels();
+
+                if(this->change_colors)
+                    slope.color = predefined_colors[(this->last_used_color++)%ARRAY_SIZE(predefined_colors)];
             }
         }
 
@@ -98,12 +120,27 @@ bool sloping_leds::set_parameter(const String& name, const String& value) {
     }
     else if(name == "speed")
     {
-        if(value == "fast")
+        if(value == "szybko")
             this->timeout_ns = 30000;
-        else if(value == "normal")
+        else if(value == "normalnie")
             this->timeout_ns = 60000;
-        else if(value == "slow")
+        else if(value == "wolno")
             this->timeout_ns = 100000;
+        else if(value == "wolniej")
+            this->timeout_ns = 200000;
+        else if(value == "bardzo_wolno")
+            this->timeout_ns = 300000;
+        else
+            return false;
+
+        return true;
+    }
+    else if(name == "change_colors")
+    {
+        if(value == "on")
+            this->change_colors = true;
+        else if(value == "off")
+            this->change_colors = false;
         else
             return false;
 
@@ -120,13 +157,23 @@ String sloping_leds::get_parameter(const String& name) {
     }
     else if(name == "speed") {
         if(this->timeout_ns == 30000)
-            return "fast";
+            return "szybko";
         else if(this->timeout_ns == 60000)
-            return "normal";
+            return "normalnie";
         else if(this->timeout_ns == 100000)
-            return "slow";
+            return "wolno";
+        else if(this->timeout_ns == 200000)
+            return "wolniej";
+        else if(this->timeout_ns == 300000)
+            return "bardzo_wolno";
         else
             return "";
+    }
+    else if(name == "change_colors") {
+        if(this->change_colors)
+            return "on";
+        else
+            return "off";
     }
 
     return {};

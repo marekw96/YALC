@@ -17,7 +17,7 @@ effect_information random_leds::get_info()
 {
     effect_information info;
     info.id = "random_leds";
-    info.name = "Random";
+    info.name = "Losowe";
     info.description = "All is random";
     info.init = std::bind(&random_leds::init, this, std::placeholders::_1);
     info.periodic = std::bind(&random_leds::periodic, this, std::placeholders::_1);

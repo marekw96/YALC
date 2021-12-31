@@ -24,4 +24,6 @@ private:
     slope* slopes = nullptr;
     int num_of_slopes;
     uint64_t timeout_ns;
+    bool change_colors;
+    uint8_t last_used_color;
 };

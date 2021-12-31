@@ -4,7 +4,7 @@ effect_information off_leds::get_info()
 {
     effect_information info;
     info.id = "off_leds";
-    info.name = "Turn off leds";
+    info.name = "Wylacz ledy";
     info.description = "Turn off all leds";
     info.init = std::bind(&off_leds::init, this, std::placeholders::_1);
     info.periodic = std::bind(&off_leds::periodic, this, std::placeholders::_1);

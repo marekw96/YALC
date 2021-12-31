@@ -1,16 +1,16 @@
 #include "filling_leds.hpp"
 
 static effect_parameter params[] = {
-    {.name = "first color", .id="first_color", .default_value = "#ff00ff", .type = EFFECT_TYPE::COLOR},
-    {.name = "second color", .id="second_color", .default_value = "#000000", .type = EFFECT_TYPE::COLOR},
-    {"Speed", "speed",  "normal", EFFECT_TYPE::SELECT, "slow;normal;fast;"}
+    {.name = "Pierwszy kolor", .id="first_color", .default_value = "#ff00ff", .type = EFFECT_TYPE::COLOR},
+    {.name = "sDrugi kolor", .id="second_color", .default_value = "#000000", .type = EFFECT_TYPE::COLOR},
+    {"Szybkosc", "speed",  "normalnie", EFFECT_TYPE::SELECT, "wolno;normalnie;szybko;"}
 };
 
 effect_information filling_leds::get_info()
 {
     effect_information info;
     info.id = "filling_leds";
-    info.name = "Filling";
+    info.name = "Wypelnianie";
     info.description = "Filling from one end";
     info.parameters = view<effect_parameter>(params, sizeof(params) / sizeof(params[0]));
     info.init = std::bind(&filling_leds::init, this, std::placeholders::_1);
@@ -91,11 +91,11 @@ bool filling_leds::set_parameter(const String& name, const String& value) {
         return true;
     }
     else if(name == "speed") {
-        if(value == "fast")
+        if(value == "szybko")
             this->timeout_ns = 100000;
-        else if(value == "normal")
+        else if(value == "normalnie")
             this->timeout_ns = 300000;
-        else if(value == "slow")
+        else if(value == "wolno")
             this->timeout_ns = 600000;
         else
             return false;
@@ -117,11 +117,11 @@ String filling_leds::get_parameter(const String& name) {
     }
     else if(name == "speed") {
         if(this->timeout_ns == 100000)
-            return "fast";
+            return "szybko";
         else if(this->timeout_ns == 300000)
-            return "normal";
+            return "normalnie";
         else if(this->timeout_ns == 600000)
-            return "slow";
+            return "wolno";
         else
             return "";
     }
