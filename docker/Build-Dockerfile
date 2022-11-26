@@ -1,0 +1,33 @@
+# syntax = docker/dockerfile:1.4.0
+
+FROM alpine:latest
+
+RUN apk add --no-cache --update wget bzip2 tar ca-certificates bash gcompat libstdc++ python3 py-pip \
+    && rm -rf /var/cache/apk/*
+
+RUN pip install pyserial
+
+ENV USER=root
+RUN wget -O /tmp/cli.tar.bz2 \
+    https://downloads.arduino.cc/arduino-cli/arduino-cli-latest-linux64.tar.bz2 && \
+    cd /tmp && \
+    mkdir arduino && \
+    bunzip2 /tmp/cli.tar.bz2 && \
+    tar -xvf /tmp/cli.tar && \
+    mv /tmp/arduino-cli* /usr/bin/arduino
+
+RUN arduino core update-index
+
+RUN echo -e 'board_manager:\n\
+  additional_urls:\n\
+    - https://dl.espressif.com/dl/package_esp32_index.json' \
+> arduino-cli.yaml
+
+RUN cd ~ ; \
+    arduino core update-index --config-file arduino-cli.yaml ; \
+    arduino core install esp32:esp32
+
+RUN arduino lib install "Adafruit NeoPixel"
+
+ENTRYPOINT [ "arduino", "compile", "--fqbn", "esp32:esp32:esp32-poe-iso"]
+CMD ["YALC.ino"]
