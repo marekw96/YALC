@@ -103,6 +103,8 @@ void remote_control::init(Adafruit_NeoPixel& pixels) {
     this->network.start_on_port(this->server_port);
     this->last_server_activity = 0;
     this->time_elapsed = 0;
+    this->node_id = 0;
+    this->sequence_i_am_alive = 0;
 }
 
 void remote_control::periodic(int64_t time_elapsed) {
@@ -172,7 +174,7 @@ void remote_control::handle_handshake_response(const std::vector<uint8_t>& packe
 
     uint32_t reply_device_id = *reinterpret_cast<const uint32_t*>(packet.data() + 4);
     uint32_t device_id = *reinterpret_cast<const uint32_t*>(packet.data() + 8);
-    uint8_t node_id = packet[60];
+    this->node_id = packet[62];
 
     this->has_connection = true;
     this->last_server_activity = this->time_elapsed;
@@ -210,7 +212,7 @@ void remote_control::send_handshake() {
     uint8_t msg[65] = {0};
     WriteBuffer buff(&msg[0], 65);
 
-    messages::write_header(buff, 0xFF, messages::MessageID::HANDSHAKE, 0);
+    messages::write_header(buff, this->node_id, messages::MessageID::HANDSHAKE, 0);
     buff.write(device_id);
     buff.write(sw_version[0]);
     buff.write(sw_version[1]);
@@ -235,7 +237,7 @@ void remote_control::send_iamalive() {
     uint8_t msg[8] = {0};
     WriteBuffer buff(&msg[0], 8);
 
-    messages::write_header(buff, 0, messages::MessageID::I_AM_ALIVE, 0);
+    messages::write_header(buff, this->node_id, messages::MessageID::I_AM_ALIVE, ++this->sequence_i_am_alive);
     buff.write(static_cast<uint32_t>(this->counter));
 
     this->network.send_packet(this->server_address.c_str(), this->server_port, &msg[0], 8);

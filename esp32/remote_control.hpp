@@ -31,4 +31,6 @@ private:
     socket network;
     uint64_t time_elapsed = 0;
     uint64_t last_server_activity = 0;
+    uint8_t node_id = 0;
+    uint32_t sequence_i_am_alive = 0;
 };
