@@ -29,5 +29,5 @@ RUN cd ~ ; \
 
 RUN arduino lib install "Adafruit NeoPixel"
 
-ENTRYPOINT [ "arduino", "compile", "--fqbn", "esp32:esp32:esp32-poe-iso"]
+ENTRYPOINT [ "arduino", "compile", "--build-path", "/app/generated", "--fqbn", "esp32:esp32:esp32-poe-iso"]
 CMD ["YALC.ino"]
