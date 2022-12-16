@@ -7,6 +7,7 @@ def str_to_sized_bytearray(txt, size):
     padding = 0
     if len(txt) > size:
         txt = txt[0:size]
+    else:
         padding = size - len(txt)
 
     data = bytearray(map(ord, txt))
@@ -35,6 +36,9 @@ class YALCRGB:
         self.components = copy.copy(new_color.components)
 
 class YALCNode:
+    PERIODIC_SUCCESS = 1
+    PERIODIC_DISCONNECT = 2
+
     def __init__(self, node_id, address, s):
         self.node_id = node_id
         self.address = address
@@ -79,8 +83,9 @@ class YALCNode:
         data += str_to_sized_bytearray("YALC Daemon", 40)
         data += self.node_id.to_bytes(1, "big")
 
-        print("send_handshake_reply", self.node_id, data)
+        print("send_handshake_reply", self.node_id, data, len(data))
         self.s.sendto(data, self.address)
+        self.timestamp["alive_indicator"]  = datetime.now() + timedelta(seconds=3)
 
     def send_leds_8bit(self):
         data = self._make_header(YALCMessages.COLOR_LEDS_8_BIT, self.sequence["COLOR_LEDS_8_BIT"])
@@ -97,7 +102,7 @@ class YALCNode:
         self.sequence["COLOR_LEDS_8_BIT"] += 1
 
     def handle_i_am_alive(self, packet):
-        self.timestamp["alive_indicator"]  = datetime.now()
+        self.timestamp["alive_indicator"]  = datetime.now() + timedelta(seconds=5)
 
     def _make_header(self, message_id, sequence_id):
         data = bytearray()
@@ -110,10 +115,14 @@ class YALCNode:
     def periodic(self):
         dt_now = datetime.now()
 
-        #last_leds_update_diff = dt_now - self.timestamp["send_update"]
-        #print(f" dt_now {dt_now} self.timestamp[send_update] {self.timestamp['send_update']} comp {dt_now > self.timestamp['send_update']} rev {dt_now < self.timestamp['send_update']}")
         if dt_now > self.timestamp['send_update']:
             self.send_leds_8bit()
+
+        if dt_now > self.timestamp['alive_indicator']:
+            print("Node should be disconnected")
+            return YALCNode.PERIODIC_DISCONNECT
+
+        return YALCNode.PERIODIC_SUCCESS
 
     def set_color(self, pixel_id, new_color):
         if pixel_id < self.parameters['number_of_leds']:
@@ -132,8 +141,15 @@ class YALCDaemon:
         self.last_node_id = 0
 
     def periodic(self):
+        nodes_to_remove = []
+
         for node_id in self.nodes:
-            self.nodes[node_id].periodic()
+            result = self.nodes[node_id].periodic()
+            if result == YALCNode.PERIODIC_DISCONNECT:
+                nodes_to_remove.append(node_id)
+
+        for node_id in nodes_to_remove:
+            self.remove_node(node_id)
 
         data = []
         address = ""
@@ -148,7 +164,7 @@ class YALCDaemon:
         node_id = data[0] #int.from_bytes(data[0], "big")
         message_id = data[1] #int.from_bytes(data[1], "big")
         sequence_id = int.from_bytes(data[2:3], "big")
-        print(f"{node_id} {message_id} {sequence_id}")
+        print(f"INCOMING MSG: node:{node_id} msg_id:{message_id} seq_id:{sequence_id}")
 
         if message_id == YALCMessages.HANDSHAKE:
             self.handle_handshake(data, address)
@@ -156,6 +172,13 @@ class YALCDaemon:
             node = self.find_node(node_id)
             if node:
                 node.handle_i_am_alive(data)
+
+    def remove_node(self, node_id):
+        node = self.nodes.pop(node_id, None)
+        if node:
+            print(f"Removed {node_id} node because perioid return DISCONNECT command")
+        else:
+            print(f"Node {node_id} should be removed because periodic returned DICONNECT command but node was not found")
 
     def find_node(self, node_id):
         if node_id in self.nodes:
@@ -169,6 +192,7 @@ class YALCDaemon:
 
         node.handle_handshake(data)
         self.nodes[self.last_node_id] = node
+        print(f"New node {self.last_node_id} attached")
 
     def set_node_color(self, node_id, pixel_id, new_color):
         node = self.find_node(node_id)
