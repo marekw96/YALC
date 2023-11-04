@@ -5,6 +5,7 @@
 #include "messages/MessageId.hpp"
 #include "messages/Header.hpp"
 #include "messages/SetColors8Bit.hpp"
+#include "messages/Ping.hpp"
 
 namespace YALC {
 enum class NodeState {NOT_CONNECTED, CONNECTED};
@@ -15,7 +16,7 @@ class DisplayNodeController {
         DisplayNodeController(TimeProvider& timeProvider, InputPackets& inputPackets, OutputPackets& outputPackets, Display& display)
             : timeProvider(timeProvider), inputPackets(inputPackets), outputPackets(outputPackets), display(display),
               state(NodeState::NOT_CONNECTED),
-              lastSendDiscoverTimePoint(0)
+              lastSendDiscoverTimePoint(0), lastSendPingTimePoint(0)
         {}
 
         void periodic() {
@@ -32,6 +33,12 @@ class DisplayNodeController {
                 handleIncomingPacketsWhenNotConnected();
             }
             else {
+                auto timeElapsedPing = currentTime - lastSendPingTimePoint;
+                if(timeElapsedPing.asSeconds() > 1) {
+                    sendPing();
+                    lastSendPingTimePoint = currentTime;
+                }
+
                 handleIncomingPacketsWhenConnected();
             }
         }
@@ -44,9 +51,12 @@ class DisplayNodeController {
         OutputPackets& outputPackets;
         Display& display;
         NodeState state;
-        ClientData masterDate;
+        ClientData masterData;
 
         TimePoint lastSendDiscoverTimePoint;
+        TimePoint lastSendPingTimePoint;
+
+        uint32_t pingCounter;
 
         void sendDiscover() {
             byte packetData[1500] = {};
@@ -74,6 +84,18 @@ class DisplayNodeController {
             outputPackets.sendBroadcast(packetData, packet.size());
         }
 
+        void sendPing() {
+            byte packetData[1500] = {};
+            writer::Ping packet(packetData);
+            packet.header().nodeId(0)
+                           .messageId(MessageId::PING)
+                           .sequenceId(0);
+
+            packet.sequence(pingCounter);
+
+            outputPackets.send(masterData, packetData, packet.size());
+        }
+
         void handleIncomingPacketsWhenNotConnected(){
             if(inputPackets.hasPacket()){
                 auto packet = inputPackets.getPacket();
@@ -81,7 +103,9 @@ class DisplayNodeController {
 
                 if(header.messageId() == YALC::MessageId::RESPONSE){
                     state = NodeState::CONNECTED;
-                    masterDate = packet.sender;
+                    masterData = packet.sender;
+                    lastSendPingTimePoint = timeProvider.current();
+                    pingCounter = 0;
                 }
             }
         }

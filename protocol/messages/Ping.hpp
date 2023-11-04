@@ -27,6 +27,7 @@ namespace YALC {
                 Ping(byte* const ptr) : data(ptr) {}
                 Header header() { return Header(data); }
                 Ping& sequence(uint32_t value) { *reinterpret_cast<uint32_t*>(data + 4) = to(value); return *this; }
+                uint64_t size() const { return 8; }
             private:
                 byte* const data;
         };

@@ -20,6 +20,7 @@ public:
     ~Socket();
 
     bool sendBroadcast(byte* payload, uint64_t size);
+    bool send(const ClientData& client, byte* payload, uint64_t size);
     bool hasPacket();
     Packet getPacket();
 

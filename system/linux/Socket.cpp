@@ -65,9 +65,22 @@ Packet Socket::getPacket()
     return capturedPacket;
 }
 
+bool Socket::send(const ClientData &client, byte *payload, uint64_t size)
+{
+    auto sendBytes = sendto(socketFd, payload, size, 0, reinterpret_cast<sockaddr*>(const_cast<sockaddr_in*>(&client.addr)), sizeof(client.addr));
+    if(sendBytes != -1) {
+        std::cout << "send size: " << size << ", sendBytes: " << sendBytes << std::endl;
+    }
+    else {
+        std::cout << "Unable to send packet, err:" << std::strerror(errno) << std::endl;
+    }
+
+    return false;
+}
+
 bool Socket::hasPacket()
 {
-    socklen_t received = 0;
+    socklen_t received = sizeof(capturedPacket.sender.addr);
     auto recvBytes = recvfrom(socketFd,
                               capturedPacket.payload,
                               sizeof(capturedPacket.payload),
@@ -76,7 +89,7 @@ bool Socket::hasPacket()
                               &received);
     if(recvBytes != -1) {
         hasPacketCaputed = true;
-        std::cout << "received packet " << recvBytes << std::endl;
+        //std::cout << "received packet " << recvBytes << std::endl;
     }
 
     return hasPacketCaputed;
