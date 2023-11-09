@@ -1,5 +1,7 @@
 #include "Time.hpp"
 
+#include <pico/stdlib.h>
+
 TimePoint Time::current()
 {
     return TimePoint(time_us_64());

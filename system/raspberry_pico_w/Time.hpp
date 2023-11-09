@@ -23,7 +23,5 @@ private:
 
 class Time {
     public:
-        using TimePoint = TimePoint;
-
         TimePoint current();
 };
