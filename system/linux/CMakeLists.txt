@@ -3,6 +3,8 @@ message("Linux build!")
 message("included ${YALC_PROTOCOL_INCLUDES}")
 message("src ${YALC_PROTOCOL_SRC}")
 
+project(YALC)
+
 include_directories(${YALC_PROTOCOL_INCLUDES})
 include_directories("system/linux")
 

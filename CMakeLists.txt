@@ -1,5 +1,4 @@
 cmake_minimum_required(VERSION 3.16)
-project(YALC)
 
 include("protocol/CMakeLists.txt")
 
@@ -11,4 +10,12 @@ endif()
 
 if( ${TARGET} STREQUAL "linux" )
     include("system/linux/CMakeLists.txt")
+endif()
+
+if( ${TARGET} STREQUAL "raspberry_pico_w" )
+    set(PICO_BOARD "pico_w")
+    include("system/raspberry_pico_w/pico-sdk/pico_sdk_init.cmake")
+
+    project(YALC CXX C ASM)
+    include("system/raspberry_pico_w/CMakeLists.txt")
 endif()
