@@ -6,8 +6,8 @@
 
 int main() {
     setup_default_uart();
-    WS2812_Init();
 
+    WS2812 leds(2, 10,  pio0, 0);
 
     printf("Hello, world!\n");
 

@@ -1,25 +1,57 @@
-/*
- * Copyright (c) 2022, Erich Styger
- *
- * SPDX-License-Identifier: BSD-3-Clause
- */
+#ifndef WS2812_H
+#define WS2812_H
 
-#ifndef WS2812_H_
-#define WS2812_H_
+#include "pico/types.h"
+#include "hardware/pio.h"
 
-#include <stdint.h>
+class WS2812 {
+    public:
+        enum DataByte {
+            NONE=0,
+            RED=1,
+            GREEN=2,
+            BLUE=3,
+            WHITE=4
+        };
+        enum DataFormat {
+            FORMAT_RGB=0,
+            FORMAT_GRB=1,
+            FORMAT_WRGB=2
+        };
 
-/*!
- * \brief Transfer the LED data buffer to the hardware
- * \param address Address of data
- * \param nofBytes Number of byes
- * \return 0 for success, non-zero otherwise
- */
-int WS2812_Transfer(uint32_t address, size_t nofBytes);
+        WS2812(uint pin, uint length, PIO pio, uint sm);
+        WS2812(uint pin, uint length, PIO pio, uint sm, DataFormat format);
+        WS2812(uint pin, uint length, PIO pio, uint sm, DataByte b1, DataByte b2, DataByte b3);
+        WS2812(uint pin, uint length, PIO pio, uint sm, DataByte b1, DataByte b2, DataByte b3, DataByte b4);
+        ~WS2812();
 
-/*!
- * \brief Module initialization
- */
-void WS2812_Init(void);
+        static uint32_t RGB(uint8_t red, uint8_t green, uint8_t blue) {
+            return (uint32_t)(blue) << 16 | (uint32_t)(green) << 8 | (uint32_t)(red);
+        };
 
-#endif /* WS2812_H_ */
+        static uint32_t RGBW(uint8_t red, uint8_t green, uint8_t blue, uint8_t white) {
+            return (uint32_t)(white) << 24 | (uint32_t)(blue) << 16 | (uint32_t)(green) << 8 | (uint32_t)(red);
+        }
+
+        void setPixelColor(uint index, uint32_t color);
+        void setPixelColor(uint index, uint8_t red, uint8_t green, uint8_t blue);
+        void setPixelColor(uint index, uint8_t red, uint8_t green, uint8_t blue, uint8_t white);
+        void fill(uint32_t color);
+        void fill(uint32_t color, uint first);
+        void fill(uint32_t color, uint first, uint count);
+        void show();
+
+    private:
+        uint pin;
+        uint length;
+        PIO pio;
+        uint sm;
+        DataByte bytes[4];
+        uint32_t *data;
+
+        void initialize(uint pin, uint length, PIO pio, uint sm, DataByte b1, DataByte b2, DataByte b3, DataByte b4);
+        uint32_t convertData(uint32_t rgbw);
+
+};
+
+#endif
