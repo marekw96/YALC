@@ -3,6 +3,7 @@
 
 #include "Time.hpp"
 #include "ws2812/ws2812.hpp"
+#include "ws2812/LedString_ws2812.hpp"
 
 int main() {
     setup_default_uart();
@@ -12,5 +13,7 @@ int main() {
     printf("Hello, world!\n");
 
     Time timeProvider;
+
+    LedString_ws2812 ledString(24, 10);
     return 0;
 }

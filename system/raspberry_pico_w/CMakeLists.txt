@@ -8,6 +8,7 @@ pico_sdk_init()
 list(APPEND "RPI_PICO_W_SRC" "system/raspberry_pico_w/main.cpp")
 list(APPEND "RPI_PICO_W_SRC" "system/raspberry_pico_w/Time.cpp")
 list(APPEND "RPI_PICO_W_SRC" "system/raspberry_pico_w/ws2812/ws2812.cpp")
+list(APPEND "RPI_PICO_W_SRC" "system/raspberry_pico_w/ws2812/LedString_ws2812.cpp")
 
 
 add_executable(RpiPicoW_YALC ${YALC_PROTOCOL_SRC}  ${RPI_PICO_W_SRC})

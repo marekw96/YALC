@@ -40,6 +40,7 @@ class WS2812 {
         void fill(uint32_t color, uint first);
         void fill(uint32_t color, uint first, uint count);
         void show();
+        uint size() const;
 
     private:
         uint pin;

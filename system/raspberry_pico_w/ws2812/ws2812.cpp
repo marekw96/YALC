@@ -5,6 +5,7 @@
 
 #ifdef DEBUG
 #include <stdio.h>
+#include "ws2812.hpp"
 #endif
 
 WS2812::WS2812(uint pin, uint length, PIO pio, uint sm)  {
@@ -119,4 +120,8 @@ void WS2812::show() {
     for (uint i = 0; i < length; i++) {
         pio_sm_put_blocking(pio, sm, data[i]);
     }
+}
+uint WS2812::size() const
+{
+    return length;
 }
