@@ -28,8 +28,8 @@ int main() {
     auto current = time.current();
     while(sfmlDisplay.isOk()) {
         sfmlDisplay.periodic();
-        auto diffUs = time.current() - current;
-        vm->exec(std::string("currentAnimation.periodic(" + std::to_string(diffUs.asMicroseconds()) + ")"));
+        auto diff = time.current() - current;
+        vm->periodic(diff);
         current = time.current();
     }
 

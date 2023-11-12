@@ -2,6 +2,7 @@
 
 #include "../pythonAnimations/pocketpy.hpp"
 #include "../pythonAnimations/YALCAnimation.py.hpp"
+#include "Time.hpp"
 
 using namespace pkpy;
 
@@ -16,6 +17,10 @@ class AnimationEngine: public VM {
             bindGetNumberOfPixels();
             bindSetPixelColorRGB();
             execYALCAnimationBaseClass();
+        }
+
+        void periodic(TimeDuration diff) {
+            vm->exec(std::string("currentAnimation.periodic(" + std::to_string(diff.asMicroseconds()) + ")"));
         }
 
     private:
