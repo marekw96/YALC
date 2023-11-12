@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../pythonAnimations/pocketpy.hpp"
+#include "../pythonAnimations/YALCAnimation.py.hpp"
 
 using namespace pkpy;
 
@@ -14,6 +15,7 @@ class AnimationEngine: public VM {
         void init(){
             bindGetNumberOfPixels();
             bindSetPixelColorRGB();
+            execYALCAnimationBaseClass();
         }
 
     private:
@@ -48,6 +50,10 @@ class AnimationEngine: public VM {
                     return vm->None;
                 });
             }
+        }
+
+        void execYALCAnimationBaseClass(){
+            this->exec(YALCAnimation_py);
         }
 
         Display& display;
