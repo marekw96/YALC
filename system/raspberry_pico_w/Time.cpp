@@ -29,3 +29,8 @@ uint64_t Duration::asSeconds() const
 {
     return value/1000000u;
 }
+
+uint64_t Duration::asMicroseconds() const
+{
+    return value;
+}

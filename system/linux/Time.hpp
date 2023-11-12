@@ -7,6 +7,7 @@ public:
     Duration(uint64_t value);
     uint64_t asMiliseconds() const;
     uint64_t asSeconds() const;
+    uint64_t asMicroseconds() const;
 
 private:
     uint64_t value;

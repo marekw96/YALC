@@ -5,7 +5,7 @@ class YALCAnimation:
 	def getNumberOfPixels(self):
 		return __YALC__get_number_of_pixels()
 
-	def periodic(self, timeElapsedInMs):
+	def periodic(self, timeElapsedInUs):
 		pass
 
 	def setPixelColor(self, id, r,g,b):

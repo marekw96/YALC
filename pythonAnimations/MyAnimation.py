@@ -7,13 +7,13 @@ class MyAnimation(YALCAnimation):
 	def name(self):
 		return "MyAnimation"
 
-	def periodic(self, timeElapsedInMs):
-		if self.timeElapsed > 100:
+	def periodic(self, timeElapsedInUs):
+		if self.timeElapsed/1000 > 100:
 			self.timeElapsed = 0
 			self.setPixelColor(self.counter, self.colors[self.color_id][0], self.colors[self.color_id][1], self.colors[self.color_id][2])
 			self.counter = self.counter + 1
 
-		self.timeElapsed = self.timeElapsed + timeElapsedInMs
+		self.timeElapsed = self.timeElapsed + timeElapsedInUs
 
 		if self.counter > self.getNumberOfPixels():
 		    self.counter = 0
