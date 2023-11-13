@@ -6,14 +6,27 @@
 #include "ws2812/LedString_ws2812.hpp"
 
 int main() {
+    stdio_init_all();
     setup_default_uart();
 
-    WS2812 leds(2, 10,  pio0, 0);
-
-    printf("Hello, world!\n");
-
     Time timeProvider;
+    LedString_ws2812 ledString(1, 10);
 
-    LedString_ws2812 ledString(24, 10);
+    bool s = false;
+    while(true) {
+        if(s){
+            byte d[] = {0,0, 255,0,255,0};
+            ledString.setColors(0, d, 2);
+        }
+        else{
+            byte d[] = {0,255, 0,0,0,255};
+            ledString.setColors(0, d, 2);
+        }
+        ledString.update();
+        sleep_ms(100);
+        s = !s;
+    }
+
+    //
     return 0;
 }

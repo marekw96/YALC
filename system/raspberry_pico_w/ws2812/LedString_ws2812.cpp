@@ -2,8 +2,13 @@
 #include "LedString_ws2812.hpp"
 
 LedString_ws2812::LedString_ws2812(uint32_t pin, uint32_t pixelsNum)
-    : leds(pin, pixelsNum, pio0, 0)
+    : leds(pin, pixelsNum, pio0, 0, WS2812::FORMAT_GRB)
 {
+}
+
+void LedString_ws2812::update()
+{
+    leds.show();
 }
 
 uint64_t LedString_ws2812::ledsCount() const

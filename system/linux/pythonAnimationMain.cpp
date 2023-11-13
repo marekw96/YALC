@@ -22,8 +22,7 @@ int main() {
 
     auto* vm = new AnimationEngine(sfmlDisplay);
     vm->init();
-    vm->exec(readWholeFile("../pythonAnimations/MyAnimation.py"));
-    vm->exec("currentAnimation = create()");
+    vm->createAnimation(readWholeFile("../pythonAnimations/MyAnimation.py"));
 
     auto current = time.current();
     while(sfmlDisplay.isOk()) {
