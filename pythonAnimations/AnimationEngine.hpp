@@ -19,8 +19,14 @@ class AnimationEngine: public VM {
             execYALCAnimationBaseClass();
         }
 
-        void periodic(TimeDuration diff) {
-            vm->exec(std::string("currentAnimation.periodic(" + std::to_string(diff.asMicroseconds()) + ")"));
+        void periodic(Duration diff) {
+            this->heap.collect();
+            this->exec(std::string("currentAnimation.periodic(" + std::to_string(diff.asMicroseconds()) + ")"));
+        }
+
+        void createAnimation(const std::string& code) {
+            this->exec(code);
+            this->exec("currentAnimation = create()");
         }
 
     private:

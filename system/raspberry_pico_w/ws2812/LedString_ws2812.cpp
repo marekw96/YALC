@@ -1,5 +1,6 @@
 #include "ws2812/LedString_ws2812.hpp"
 #include "LedString_ws2812.hpp"
+#include <stdio.h>
 
 LedString_ws2812::LedString_ws2812(uint32_t pin, uint32_t pixelsNum)
     : leds(pin, pixelsNum, pio0, 0, WS2812::FORMAT_GRB)
@@ -23,6 +24,7 @@ YALC::ColorOrder LedString_ws2812::colorOrder() const
 
 void LedString_ws2812::setColors(uint32_t startPixel, byte *data, uint32_t numberOfPixels)
 {
+    printf("setColors!!\n");
     for(int i = 0; i < numberOfPixels; ++i)
     {
         leds.setPixelColor(startPixel + i, data[3*i + 0], data[3*i + 1], data[3*i + 2]);
