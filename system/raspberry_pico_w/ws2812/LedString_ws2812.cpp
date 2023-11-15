@@ -5,6 +5,7 @@
 LedString_ws2812::LedString_ws2812(uint32_t pin, uint32_t pixelsNum)
     : leds(pin, pixelsNum, pio0, 0, WS2812::FORMAT_GRB)
 {
+    leds.fill(0);
 }
 
 void LedString_ws2812::update()

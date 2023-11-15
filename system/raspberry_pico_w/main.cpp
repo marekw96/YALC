@@ -14,9 +14,9 @@ int main() {
     LedString_ws2812 ledString(1, 100);
 
     auto* vm = new AnimationEngine(ledString);
-    vm->createAnimation(MyAnimation_py);
 
-    set(ledString, 255, 0,0);
+    vm->init();
+    vm->createAnimation(MyAnimation_py);
 
     auto current = time.current();
     while(true) {
@@ -25,7 +25,6 @@ int main() {
         vm->periodic(diff);
         current = time.current();
     }
-
 
     delete vm;
     return 0;
