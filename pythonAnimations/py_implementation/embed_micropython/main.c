@@ -1,6 +1,5 @@
-extern "C" {
     #include "port/micropython_embed.h"
-}
+
 // This is example 1 script, which will be compiled and executed.
 static const char *example_1 =
     "print('hello world!', list(x + 1 for x in range(10)), end='eol\\n')";
@@ -20,8 +19,6 @@ static const char *example_2 =
     "gc.collect()\n"
     "\n"
     "print('finish')\n"
-    "import example\n"
-    "print(example.add_ints(1, 3))"
     ;
 
 // This array is the MicroPython GC heap.

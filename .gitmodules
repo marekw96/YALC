@@ -7,3 +7,6 @@
 [submodule "pythonAnimations/pocketpy"]
 	path = pythonAnimations/pocketpy
 	url = https://github.com/blueloveTH/pocketpy.git
+[submodule "pythonAnimations/py_implementation/micropython"]
+	path = pythonAnimations/py_implementation/micropython
+	url = https://github.com/micropython/micropython

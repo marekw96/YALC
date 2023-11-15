@@ -20,8 +20,6 @@ static const char *example_2 =
     "gc.collect()\n"
     "\n"
     "print('finish')\n"
-    "import example\n"
-    "print(example.add_ints(1, 3))"
     ;
 
 // This array is the MicroPython GC heap.
