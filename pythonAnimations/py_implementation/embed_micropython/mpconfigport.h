@@ -13,4 +13,4 @@
 #define MICROPY_ENABLE_COMPILER                 (1)
 #define MICROPY_ENABLE_GC                       (1)
 #define MICROPY_PY_GC                           (1)
-#define MODULE_EXAMPLE_ENABLED (1)
+#define MODULE_LEDS_ENABLED (1)

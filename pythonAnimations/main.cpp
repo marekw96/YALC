@@ -1,5 +1,14 @@
 extern "C" {
     #include "port/micropython_embed.h"
+    #include <stdio.h>
+
+    void set_pixel_id_r_g_b(int id , int r , int g, int b){
+        printf("Main.cpp id %d color %d %d %d \n", id, r,g,b);
+    }
+
+    int get_number_of_pixels() {
+        return 10;
+    }
 }
 // This is example 1 script, which will be compiled and executed.
 static const char *example_1 =
@@ -10,18 +19,11 @@ static const char *example_2 =
     "for i in range(10):\n"
     "    print('iter {:08}'.format(i))\n"
     "\n"
-    "try:\n"
-    "    1//0\n"
-    "except Exception as er:\n"
-    "    print('caught exception', repr(er))\n"
-    "\n"
-    "import gc\n"
-    "print('run GC collect')\n"
-    "gc.collect()\n"
     "\n"
     "print('finish')\n"
-    "import example\n"
-    "print(example.add_ints(1, 3))"
+    "import leds\n"
+    "leds.set_pixel_id_r_g_b(0,2,3,4)\n"
+    "print(leds.get_number_of_pixels())"
     ;
 
 // This array is the MicroPython GC heap.

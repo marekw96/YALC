@@ -28,7 +28,7 @@ int main() {
 
     auto current = time.current();
 
-    // for(int i = 0; i < 1000; ++i) {
+    // for(int i = 0; i < 10; ++i) {
     //     std::cout << "Loop: " << i << std::endl;
     //     sfmlDisplay.periodic();
     //     auto diff = time.current() - current;

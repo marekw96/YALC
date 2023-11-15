@@ -15,7 +15,8 @@ endif()
 if( ${TARGET} STREQUAL "raspberry_pico_w" )
     set(PICO_BOARD "pico_w")
     include("system/raspberry_pico_w/pico-sdk/pico_sdk_init.cmake")
-
     project(YALC CXX C ASM)
+
+
     include("system/raspberry_pico_w/CMakeLists.txt")
 endif()

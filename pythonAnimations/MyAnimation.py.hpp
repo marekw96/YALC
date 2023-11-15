@@ -1,7 +1,7 @@
 #pragma once
 const char* MyAnimation_py = {
   "class MyAnimation(YALCAnimation):\n"
-  "    timeElapsed = 0\n"
+  "    timeElapsed = int(0)\n"
   "    counter = 0\n"
   "    colors = [[255,0,0], [0,255,0], [0,0,255]]\n"
   "    color_id = 0\n"
@@ -10,12 +10,12 @@ const char* MyAnimation_py = {
   "        return \"MyAnimation\"\n"
   "\n"
   "    def periodic(self, timeElapsedInUs):\n"
-  "        if self.timeElapsed/1000 > 100:\n"
+  "        if self.timeElapsed > 100000:\n"
   "            self.timeElapsed = 0\n"
   "            self.setPixelColor(self.counter, self.colors[self.color_id][0], self.colors[self.color_id][1], self.colors[self.color_id][2])\n"
   "            self.counter = self.counter + 1\n"
   "\n"
-  "        self.timeElapsed = self.timeElapsed + timeElapsedInUs\n"
+  "        self.timeElapsed = self.timeElapsed + int(timeElapsedInUs)\n"
   "\n"
   "        if self.counter > self.getNumberOfPixels():\n"
   "            self.counter = 0\n"
