@@ -17,6 +17,7 @@ extern "C" {
 }
 #include "../pythonAnimations/YALCAnimation.py.hpp"
 #include "Time.hpp"
+#include <string>
 
 static char heap[8 * 1024];
 

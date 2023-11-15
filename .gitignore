@@ -1,1 +1,7 @@
-pythonAnimations/YALCAnimation.py.hpp
+pythonAnimations/*.py.hpp
+.vscode/
+build_linux/
+pythonAnimations/build/
+pythonAnimations/py_implementation/embed_micropython/build-embed/
+pythonAnimations/py_implementation/embed_micropython/build/
+pythonAnimations/py_implementation/embed_micropython/micropython_embed/
