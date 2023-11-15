@@ -17,24 +17,22 @@ std::string readWholeFile(std::string fileName) {
     return str;
 }
 
-int main() {
+int main(int argc, char* argv[]) {
+    if(argc != 2){
+        std::cerr << "Pass animation file name" << std::endl;
+        return 1;
+    }
+
     Time time;
-    SFMLDisplay sfmlDisplay(10, 350, 150);
+    SFMLDisplay sfmlDisplay(25, 650, 150);
 
     auto* vm = new AnimationEngine(sfmlDisplay);
-    std::cout << "sizeof(*vm) " << sizeof(*vm) << std::endl;
+
     vm->init();
-    vm->createAnimation(MyAnimation_py);
+    vm->createAnimation(readWholeFile(argv[1]));
 
     auto current = time.current();
 
-    // for(int i = 0; i < 10; ++i) {
-    //     std::cout << "Loop: " << i << std::endl;
-    //     sfmlDisplay.periodic();
-    //     auto diff = time.current() - current;
-    //     vm->periodic(diff);
-    //     current = time.current();
-    // }
     while(sfmlDisplay.isOk()) {
         sfmlDisplay.periodic();
         auto diff = time.current() - current;
