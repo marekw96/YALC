@@ -133,6 +133,7 @@ ParseProgress parseHeader(Request& request, char* data, uint32_t data_size) {
     auto name_length = sizeof(Header::name) < separator_pos ? sizeof(Header::name): separator_pos;
     for(int i = 0; i < name_length; ++i)
         request.headers[request.usedHeaders].name[i] = data[i];
+    request.headers[request.usedHeaders].name[sizeof(Header::name) -1] = 0;
 
     //Find and copy value
     data += separator_pos + 2;
@@ -146,6 +147,7 @@ ParseProgress parseHeader(Request& request, char* data, uint32_t data_size) {
     auto value_length = sizeof(Header::value) < value_pos ? sizeof(Header::value): value_pos;
     for(int i = 0; i < value_length; ++i)
         request.headers[request.usedHeaders].value[i] = data[i];
+    request.headers[request.usedHeaders].value[sizeof(Header::value) -1] = 0;
 
     ++request.usedHeaders;
     return {ParseResult::IN_PROGRESS, separator_pos+ value_pos + 3};
