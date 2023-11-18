@@ -61,11 +61,11 @@ ParseProgress parseHttpVersion(Request& request, char* data, uint32_t data_size)
 ParseProgress parseUri(Request& request, char* data, uint32_t data_size) {
     auto max_size = data_size < sizeof(request.uri) ? data_size : sizeof(request.uri);
 
-    uint32_t i = 0;
-    for(i = 0; i < max_size && data[i] != ' '; ++i) {
-        request.uri[i] = data[i];
+    uint32_t i = 1;
+    for(i; i < max_size && data[i] != ' ' && data[i] != '?'; ++i) {
+        request.uri[i-1] = data[i];
     }
-    request.uri[sizeof(request.uri) - 1] = 0;
+    request.uri[sizeof(Request::uri) - 1] = 0;
 
     return {ParseResult::DONE, i};
 }
@@ -153,6 +153,48 @@ ParseProgress parseHeader(Request& request, char* data, uint32_t data_size) {
     return {ParseResult::IN_PROGRESS, separator_pos+ value_pos + 3};
 }
 
+ParseProgress parseParameters(Request& request, char* data, uint32_t data_size, Parameter::Type type) {
+    //printf("parseHeader  request.usedHeaders %d sizeof %d \n", request.usedHeaders, (sizeof(Request::headers) / sizeof(Header)));
+    if(request.usedParameters >= (sizeof(Request::parameters) / sizeof(Parameter)))
+        return {ParseResult::DONE, 0};
+
+    if(data[0] == ' ')
+        return {ParseResult::DONE, 1};
+
+    if(data[0] == '&')
+        return {ParseResult::IN_PROGRESS, 1};
+
+    //Find and copy name
+    auto separator_pos = 0u;
+    for(separator_pos; separator_pos < data_size && data[separator_pos] != '='  && data[separator_pos] != ' '; ++separator_pos){}
+    //printf("separator_pos %d\n", separator_pos);
+
+    if(separator_pos == data_size)
+        return {ParseResult::ERROR, 0};
+
+    auto name_length = sizeof(Parameter::name)-1 < separator_pos ? sizeof(Parameter::name)-1: separator_pos;
+    for(int i = 0; i < name_length; ++i)
+        request.parameters[request.usedParameters].name[i] = data[i];
+    request.parameters[request.usedParameters].name[name_length] = 0;
+
+    //Find and copy value
+    data += separator_pos + 1;
+    data_size -= separator_pos + 1;
+    auto value_pos = 0u;
+    for(value_pos; value_pos < data_size && data[value_pos] != '&' && data[value_pos] != ' '; ++value_pos){}
+
+    if(value_pos == data_size)
+        return {ParseResult::ERROR, 0};
+
+    auto value_length = sizeof(Parameter::value) -1 < value_pos ? sizeof(Parameter::value)-1: value_pos;
+    for(int i = 0; i < value_length; ++i)
+        request.parameters[request.usedParameters].value[i] = data[i];
+    request.parameters[request.usedParameters].value[value_length] = 0;
+    request.parameters[request.usedParameters].type = type;
+
+    ++request.usedParameters;
+    return {ParseResult::IN_PROGRESS, separator_pos+ value_pos+1};
+}
 
 ParseResult parseRequest(char* data, Request& request) {
     constexpr int CLFR_SIZE = 2;
@@ -160,13 +202,26 @@ ParseResult parseRequest(char* data, Request& request) {
     auto result = parseMethod(request, data, 1024);
     if(result.result == ParseResult::ERROR)
         return ParseResult::ERROR;
-
     offset += result.end_at + 1;
 
     result = parseUri(request, data + offset, 1024 - offset);
     if(result.result == ParseResult::ERROR)
         return ParseResult::ERROR;
-    offset += result.end_at + 1;
+    offset += result.end_at;
+
+    if(data[offset] == '?'){
+        result.result == ParseResult::IN_PROGRESS;
+        ++offset;
+        auto maxParameters = sizeof(Request::parameters) / sizeof(Parameter);
+        for(int i = 0; i < maxParameters; ++i) {
+            result = parseParameters(request, data + offset, 1024 - offset, Parameter::Type::GET);
+            if(result.result != ParseResult::IN_PROGRESS)
+                break;
+
+            offset += result.end_at;
+        }
+    }
+    ++offset;
 
     result = parseHttpVersion(request, data + offset, 1024 - offset);
     if(result.result == ParseResult::ERROR)
