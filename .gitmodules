@@ -10,3 +10,6 @@
 [submodule "pythonAnimations/py_implementation/micropython"]
 	path = pythonAnimations/py_implementation/micropython
 	url = https://github.com/micropython/micropython
+[submodule "system/raspberry_pico_w/lib/picow-http"]
+	path = system/raspberry_pico_w/lib/picow-http
+	url = https://gitlab.com/slimhazard/picow_http.git
