@@ -240,6 +240,26 @@ ParseResult parseRequest(char* data, Request& request) {
     return result.result;
 }
 
+uint32_t strlen(const char* str) {
+    uint32_t len = 0;
+    for(len; str[len] != 0; ++len){}
+    return len;
+}
+
+static void sendResponse(tcp_pcb* pcb, const Request& request) {
+    const char* response = "HTTP/1.1 200 OK\r\n"
+        "Server: YALC webserver\r\n"
+        "Content-Type: text/plain\r\n"
+        "Date: Mon, 27 Jul 2009 12:28:53 GMT\r\n"
+        "Last-Modified: Wed, 22 Jul 2009 19:15:56 GMT\r\n"
+        "Content-Length: 2\r\n"
+        "\r\n"
+        "OK";
+
+    tcp_write(pcb, response, strlen(response), TCP_WRITE_FLAG_COPY);
+    tcp_output(pcb);
+}
+
 static err_t http_recv(void *arg, tcp_pcb *pcb, pbuf *p, err_t err)
 {
     httpState *hs = (httpState *)arg;
@@ -254,8 +274,9 @@ static err_t http_recv(void *arg, tcp_pcb *pcb, pbuf *p, err_t err)
     parseRequest(part, request);
     debug_print(request);
 
+    sendResponse(pcb, request);
 
-    close_connection(pcb, hs, true);
+    //
 
     return ERR_OK;
 }
@@ -316,7 +337,7 @@ static err_t http_sent(void *arg, tcp_pcb *pcb, u16_t len)
         return ERR_OK;
     }
 
-
+    close_connection(pcb, hs, false);
 
     return ERR_OK;
 }
