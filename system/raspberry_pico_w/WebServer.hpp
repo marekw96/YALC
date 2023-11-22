@@ -64,6 +64,13 @@ struct Header {
     std::string value;
 };
 
+namespace Headers {
+    namespace ContentType {
+        static Header XHTML {"Content-Type", "application/xhtml+xml; charset=utf-8"};
+        static Header text_html {"Content-Type", "text/html"};
+    }
+}
+
 struct Parameter {
     enum Type {POST, GET};
 
@@ -151,6 +158,7 @@ struct Request {
 struct Response {
     ResponseCode code = ResponseCode::OK;
     std::string payload;
+    std::vector<Header> headers;
 
     Response& write(const std::string& data);
 };

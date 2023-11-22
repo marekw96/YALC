@@ -231,20 +231,23 @@ uint32_t strlen(const char* str) {
 static Response prepareResponse(tcp_pcb* pcb, const Request& request) {
     Response response;
 
+    response.headers.push_back(Headers::ContentType::text_html);
     response.write("OK");
 
     return response;
 }
 
 static err_t sendHeaders(tcp_pcb* pcb, const Response& response) {
-    const char* headers = "HTTP/1.1 200 OK\r\n"
-        "Server: YALC webserver\r\n"
-        "Content-Type: text/plain\r\n"
-        "Content-Length: 2\r\n"
-        "\r\n"
-        "OK";
+    std::string headers = "HTTP/1.1 200 OK\r\n"
+                          "Server: YALC webserver\r\n";
 
-    tcp_write(pcb, headers, strlen(headers), TCP_WRITE_FLAG_COPY);
+    for(const auto& header: response.headers)
+        headers +=  header.name + std::string(": ") + header.value + "\r\n";
+
+    headers += "Content-Length: " + std::to_string(response.payload.size()) + "\r\n"
+               "\r\n";
+
+    tcp_write(pcb, headers.c_str(), headers.size(), TCP_WRITE_FLAG_COPY);
     tcp_output(pcb);
 
     return ERR_OK;
