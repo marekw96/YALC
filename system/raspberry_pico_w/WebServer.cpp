@@ -265,7 +265,7 @@ static err_t sendResponse(tcp_pcb* pcb, const Response& response){
 static err_t http_recv(void *arg, tcp_pcb *pcb, pbuf *p, err_t err)
 {
     httpState *hs = (httpState *)arg;
-    printf("http_recv: len %d, tot_len %d \n", p->len, p->tot_len);
+    //printf("http_recv: len %d, tot_len %d \n", p->len, p->tot_len);
 
     if ((err != ERR_OK) || (p == NULL) || (hs == NULL)) {
         /* error or closed by other side? */
@@ -288,7 +288,7 @@ static err_t http_recv(void *arg, tcp_pcb *pcb, pbuf *p, err_t err)
 
     Request request;
     parseRequest(part, request);
-    debug_print(request);
+    printRequestLight(request);
     auto response = hs->webserver->prepareResponse(pcb, request);
 
     sendHeaders(pcb, response);
@@ -350,7 +350,7 @@ static err_t http_poll(void *arg, tcp_pcb *pcb)
 static err_t http_sent(void *arg, tcp_pcb *pcb, u16_t len)
 {
     httpState *hs = (httpState *)arg;
-    printf("http_sent\n");
+    //printf("http_sent\n");
 
     if (hs == NULL) {
         return ERR_OK;

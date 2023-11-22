@@ -186,6 +186,10 @@ static void debug_print(const Request& request) {
     }
 }
 
+static void printRequestLight(const Request& request) {
+    printf("[HTTP][%s]%s\n", to_char(request.method), request.uri.c_str());
+}
+
 class WebServer {
 public:
     bool init(uint16_t port);
