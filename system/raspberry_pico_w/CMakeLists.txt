@@ -30,7 +30,7 @@ target_include_directories(RpiPicoW_YALC PUBLIC
                           "${PROJECT_BINARY_DIR}"
                           "${PROJECT_SOURCE_DIR}/pythonAnimations/py_implementation/embed_micropython/micropython_embed"
                           )
-target_link_libraries(RpiPicoW_YALC pico_stdlib hardware_pio hardware_dma pico_cyw43_arch_lwip_poll MicroPythonAsLibrary pico_lwip_core pico_lwip_core4 pico_lwip_api)
+target_link_libraries(RpiPicoW_YALC pico_stdlib hardware_pio hardware_dma pico_cyw43_arch_lwip_poll MicroPythonAsLibrary pico_lwip_core pico_lwip_core4 pico_lwip_api pico_multicore)
 pico_add_extra_outputs(RpiPicoW_YALC)
 pico_generate_pio_header(RpiPicoW_YALC ${CMAKE_CURRENT_LIST_DIR}/ws2812/ws2812.pio)
 pico_enable_stdio_usb(RpiPicoW_YALC 1)

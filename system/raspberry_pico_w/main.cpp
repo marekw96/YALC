@@ -10,20 +10,36 @@
 #include "WebServer.hpp"
 #include "lwip/init.h"
 #include "pico/cyw43_arch.h"
+#include "pico/multicore.h"
 
-int main() {
-    stdio_init_all();
 
+void core_with_python_animations(){
+    printf("[core_with_python_animations] starting\n");
     Time time;
     LedString_ws2812 ledString(1, 100);
-    InternetManager internet;
-    WebServer webServer;
 
     auto* vm = new AnimationEngine(ledString);
-    for(int i = 5; i > 0; --i){
-        printf("-wait %d\n", i);
-        sleep_ms(1000);
+
+    vm->init();
+    vm->createAnimation(MyAnimation_py);
+
+    auto current = time.current();
+    while(true) {
+        ledString.update();
+        auto diff = time.current() - current;
+        vm->periodic(diff);
+
+        current = time.current();
     }
+
+    delete vm;
+}
+
+void core_with_non_rt_stuff() {
+    printf("[core_with_non_rt_stuff] starting\n");
+    Time time;
+    InternetManager internet;
+    WebServer webServer;
 
     internet.init();
     if(internet.connect_to("SSID", "passwd")){
@@ -35,22 +51,28 @@ int main() {
     }
 
     internet.start();
-    vm->init();
     webServer.init(80);
-
-    vm->createAnimation(MyAnimation_py);
 
     auto current = time.current();
     while(true) {
-        ledString.update();
         auto diff = time.current() - current;
-        vm->periodic(diff);
         current = time.current();
         internet.periodic();
     }
 
     internet.deinit();
+}
 
-    delete vm;
+int main() {
+    stdio_init_all();
+
+    for(int i = 5; i > 0; --i){
+        printf("-wait %d\n", i);
+        sleep_ms(1000);
+    }
+
+    multicore_launch_core1(core_with_python_animations);
+    core_with_non_rt_stuff();
+
     return 0;
 }
