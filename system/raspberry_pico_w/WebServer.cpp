@@ -61,11 +61,11 @@ ParseProgress parseHttpVersion(Request& request, char* data, uint32_t data_size)
 ParseProgress parseUri(Request& request, char* data, uint32_t data_size) {
     auto max_size = data_size < sizeof(request.uri) ? data_size : sizeof(request.uri);
 
-    uint32_t i = 1;
+    uint32_t i = 0;
     for(i; i < max_size && data[i] != ' ' && data[i] != '?'; ++i) {
-        request.uri[i-1] = data[i];
+        request.uri[i] = data[i];
     }
-    request.uri[sizeof(Request::uri) - 1] = 0;
+    request.uri[i] = 0;
 
     return {ParseResult::DONE, i};
 }
@@ -246,18 +246,33 @@ uint32_t strlen(const char* str) {
     return len;
 }
 
-static void sendResponse(tcp_pcb* pcb, const Request& request) {
-    const char* response = "HTTP/1.1 200 OK\r\n"
+static Response prepareResponse(tcp_pcb* pcb, const Request& request) {
+    Response response;
+
+    response.write("OK", strlen("OK"));
+
+    return response;
+}
+
+static err_t sendHeaders(tcp_pcb* pcb, const Response& response) {
+    const char* headers = "HTTP/1.1 200 OK\r\n"
         "Server: YALC webserver\r\n"
         "Content-Type: text/plain\r\n"
-        "Date: Mon, 27 Jul 2009 12:28:53 GMT\r\n"
-        "Last-Modified: Wed, 22 Jul 2009 19:15:56 GMT\r\n"
         "Content-Length: 2\r\n"
         "\r\n"
         "OK";
 
-    tcp_write(pcb, response, strlen(response), TCP_WRITE_FLAG_COPY);
+    tcp_write(pcb, headers, strlen(headers), TCP_WRITE_FLAG_COPY);
     tcp_output(pcb);
+
+    return ERR_OK;
+}
+
+static err_t sendResponse(tcp_pcb* pcb, const Response& response){
+    tcp_write(pcb, response.payload, response.totalSize, TCP_WRITE_FLAG_COPY);
+    tcp_output(pcb);
+
+    return ERR_OK;
 }
 
 static err_t http_recv(void *arg, tcp_pcb *pcb, pbuf *p, err_t err)
@@ -265,18 +280,35 @@ static err_t http_recv(void *arg, tcp_pcb *pcb, pbuf *p, err_t err)
     httpState *hs = (httpState *)arg;
     printf("http_recv: len %d, tot_len %d \n", p->len, p->tot_len);
 
+    if ((err != ERR_OK) || (p == NULL) || (hs == NULL)) {
+        /* error or closed by other side? */
+        if (p != NULL) {
+            /* Inform TCP that we have taken the data. */
+            tcp_recved(pcb, p->tot_len);
+            pbuf_free(p);
+        }
+        if (hs == NULL) {
+            /* this should not happen, only to be robust */
+        }
+
+        close_connection(pcb, hs);
+        return ERR_OK;
+    }
+
     char part[1024] = {0};
     pbuf_copy_partial(p, part, sizeof(part), 0);
     part[1023] = 0;
-    printf("data %s\n", part);
 
     Request request;
     parseRequest(part, request);
     debug_print(request);
+    auto response = prepareResponse(pcb, request);
 
-    sendResponse(pcb, request);
+    sendHeaders(pcb, response);
+    sendResponse(pcb, response);
 
-    //
+    tcp_recved(pcb, p->tot_len);
+    pbuf_free(p);
 
     return ERR_OK;
 }
@@ -393,4 +425,14 @@ bool WebServer::init(uint16_t port)
 
     printf("Setup webserver on port %d\n", port);
     return true;
+}
+
+Response &Response::write(const char *data, uint32_t size)
+{
+    for(int i = 0; i < size; ++i)
+        payload[totalSize + i] = data[i];
+
+    totalSize += size;
+
+    return *this;
 }
