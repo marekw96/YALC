@@ -163,6 +163,12 @@ struct Response {
     Response& write(const std::string& data);
 };
 
+struct RequestHandler {
+    std::string uri;
+    Response (*handler)(void* obj, const Request& request);
+    void* handlerObject;
+};
+
 static void debug_print(const Request& request) {
     printf("Request:\n");
     printf("Version: %s\n", to_char(request.version));
@@ -183,7 +189,14 @@ static void debug_print(const Request& request) {
 class WebServer {
 public:
     bool init(uint16_t port);
+    void registerHandler(RequestHandler handler);
+    void registerDefaultHandler(RequestHandler handler);
 
 private:
     tcp_pcb* socket;
+    std::vector<RequestHandler> handlers;
+    RequestHandler defaultHandler;
+
+public:
+    Response prepareResponse(tcp_pcb* pcb, const Request& request);
 };

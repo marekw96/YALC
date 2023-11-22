@@ -2,7 +2,7 @@
 #include "lwipopts.h"
 
 struct httpState {
-    WebServer* webserer;
+    WebServer* webserver;
     tcp_pcb* socket;
     int tries;
 };
@@ -228,13 +228,15 @@ uint32_t strlen(const char* str) {
     return len;
 }
 
-static Response prepareResponse(tcp_pcb* pcb, const Request& request) {
-    Response response;
+Response WebServer::prepareResponse(tcp_pcb* pcb, const Request& request) {
+    for(auto& handler: handlers){
+        if(handler.uri == request.uri)
+        {
+            return handler.handler(handler.handlerObject, request);
+        }
+    }
 
-    response.headers.push_back(Headers::ContentType::text_html);
-    response.write("OK");
-
-    return response;
+    return defaultHandler.handler(defaultHandler.handlerObject, request);
 }
 
 static err_t sendHeaders(tcp_pcb* pcb, const Response& response) {
@@ -287,7 +289,7 @@ static err_t http_recv(void *arg, tcp_pcb *pcb, pbuf *p, err_t err)
     Request request;
     parseRequest(part, request);
     debug_print(request);
-    auto response = prepareResponse(pcb, request);
+    auto response = hs->webserver->prepareResponse(pcb, request);
 
     sendHeaders(pcb, response);
     sendResponse(pcb, response);
@@ -374,7 +376,7 @@ static err_t tcp_accept(void *arg, tcp_pcb *newpcb, err_t err)
     }
 
     state->socket = newpcb;
-    state->webserer = server;
+    state->webserver = server;
     state->tries = 0;
     tcp_arg(newpcb, state);
 
@@ -384,6 +386,14 @@ static err_t tcp_accept(void *arg, tcp_pcb *newpcb, err_t err)
     tcp_sent(newpcb, http_sent);
 
     return ERR_OK;
+}
+
+Response default404Handler(void* obj, const Request& request) {
+    Response response;
+    response.headers.push_back(Headers::ContentType::text_html);
+    response.write("404 - Page not found!");
+
+    return response;
 }
 
 bool WebServer::init(uint16_t port)
@@ -408,8 +418,20 @@ bool WebServer::init(uint16_t port)
     tcp_arg(socket, this);
     tcp_accept(socket, tcp_accept);
 
+    defaultHandler = {"/", default404Handler, nullptr};
+
     printf("Setup webserver on port %d\n", port);
     return true;
+}
+
+void WebServer::registerHandler(RequestHandler handler)
+{
+    handlers.push_back(handler);
+}
+
+void WebServer::registerDefaultHandler(RequestHandler handler)
+{
+    defaultHandler = handler;
 }
 
 Response &Response::write(const std::string &data)
