@@ -62,10 +62,8 @@ ParseProgress parseUri(Request& request, char* data, uint32_t data_size) {
     auto max_size = data_size < sizeof(request.uri) ? data_size : sizeof(request.uri);
 
     uint32_t i = 0;
-    for(i; i < max_size && data[i] != ' ' && data[i] != '?'; ++i) {
-        request.uri[i] = data[i];
-    }
-    request.uri[i] = 0;
+    for(i; i < max_size && data[i] != ' ' && data[i] != '?'; ++i) { }
+    request.uri = std::string(data, i);
 
     return {ParseResult::DONE, i};
 }
@@ -114,50 +112,37 @@ ParseProgress parseMethod(Request& request, char* data, uint32_t data_size) {
 }
 
 ParseProgress parseHeader(Request& request, char* data, uint32_t data_size) {
-    //printf("parseHeader  request.usedHeaders %d sizeof %d \n", request.usedHeaders, (sizeof(Request::headers) / sizeof(Header)));
-    if(request.usedHeaders >= (sizeof(Request::headers) / sizeof(Header)))
-        return {ParseResult::DONE, 0};
-
     //printf("parseHeader  data[0] %d data[1] %d\n",data[0], data[1]);
     if(data[0] == '\r' && data[1] == '\n')
         return {ParseResult::DONE, 2};
 
-    //Find and copy name
+    //Find name
     auto separator_pos = 0u;
-    for(separator_pos; separator_pos < data_size && data[separator_pos] != ':' && data[separator_pos] != '\n'; ++separator_pos){}
+    for(separator_pos; separator_pos < data_size && data[separator_pos] != ':' && data[separator_pos] != '\r' && data[separator_pos] != '\n'; ++separator_pos){}
     //printf("separator_pos %d\n", separator_pos);
 
     if(separator_pos == data_size)
         return {ParseResult::ERROR, 0};
 
-    auto name_length = sizeof(Header::name) < separator_pos ? sizeof(Header::name): separator_pos;
-    for(int i = 0; i < name_length; ++i)
-        request.headers[request.usedHeaders].name[i] = data[i];
-    request.headers[request.usedHeaders].name[sizeof(Header::name) -1] = 0;
-
-    //Find and copy value
-    data += separator_pos + 2;
+    //Find value
+    auto* data2 = data + separator_pos + 2;
     data_size -= separator_pos + 2;
     auto value_pos = 0u;
-    for(value_pos; value_pos < data_size && data[value_pos] != '\n'; ++value_pos){}
+    for(value_pos; value_pos < data_size && data2[value_pos] != '\r' && data2[value_pos] != '\n'; ++value_pos){}
 
     if(value_pos == data_size)
         return {ParseResult::ERROR, 0};
 
-    auto value_length = sizeof(Header::value) < value_pos ? sizeof(Header::value): value_pos;
-    for(int i = 0; i < value_length; ++i)
-        request.headers[request.usedHeaders].value[i] = data[i];
-    request.headers[request.usedHeaders].value[sizeof(Header::value) -1] = 0;
+    Header newHeader;
+    newHeader.name = std::string(data, separator_pos);
+    newHeader.value = std::string(data2, value_pos);
 
-    ++request.usedHeaders;
-    return {ParseResult::IN_PROGRESS, separator_pos+ value_pos + 3};
+    request.headers.push_back(newHeader);
+
+    return {ParseResult::IN_PROGRESS, separator_pos+ value_pos + 4};
 }
 
 ParseProgress parseParameters(Request& request, char* data, uint32_t data_size, Parameter::Type type) {
-    //printf("parseHeader  request.usedHeaders %d sizeof %d \n", request.usedHeaders, (sizeof(Request::headers) / sizeof(Header)));
-    if(request.usedParameters >= (sizeof(Request::parameters) / sizeof(Parameter)))
-        return {ParseResult::DONE, 0};
-
     if(data[0] == ' ')
         return {ParseResult::DONE, 1};
 
@@ -167,32 +152,29 @@ ParseProgress parseParameters(Request& request, char* data, uint32_t data_size, 
     //Find and copy name
     auto separator_pos = 0u;
     for(separator_pos; separator_pos < data_size && data[separator_pos] != '='  && data[separator_pos] != ' '; ++separator_pos){}
-    //printf("separator_pos %d\n", separator_pos);
 
     if(separator_pos == data_size)
         return {ParseResult::ERROR, 0};
-
-    auto name_length = sizeof(Parameter::name)-1 < separator_pos ? sizeof(Parameter::name)-1: separator_pos;
-    for(int i = 0; i < name_length; ++i)
-        request.parameters[request.usedParameters].name[i] = data[i];
-    request.parameters[request.usedParameters].name[name_length] = 0;
+    if(separator_pos == 0)
+        return {ParseResult::DONE, 0};
 
     //Find and copy value
-    data += separator_pos + 1;
+    auto* data2 = data + separator_pos + 1;
     data_size -= separator_pos + 1;
     auto value_pos = 0u;
-    for(value_pos; value_pos < data_size && data[value_pos] != '&' && data[value_pos] != ' '; ++value_pos){}
+    for(value_pos; value_pos < data_size && data2[value_pos] != '&' && data2[value_pos] != ' '; ++value_pos){}
 
     if(value_pos == data_size)
         return {ParseResult::ERROR, 0};
+    if(value_pos == 0)
+        return {ParseResult::DONE, 0};
 
-    auto value_length = sizeof(Parameter::value) -1 < value_pos ? sizeof(Parameter::value)-1: value_pos;
-    for(int i = 0; i < value_length; ++i)
-        request.parameters[request.usedParameters].value[i] = data[i];
-    request.parameters[request.usedParameters].value[value_length] = 0;
-    request.parameters[request.usedParameters].type = type;
+    Parameter newParameter;
+    newParameter.type = type;
+    newParameter.name = std::string(data, separator_pos);
+    newParameter.value = std::string(data2, value_pos);
+    request.parameters.push_back(newParameter);
 
-    ++request.usedParameters;
     return {ParseResult::IN_PROGRESS, separator_pos+ value_pos+1};
 }
 
@@ -212,7 +194,7 @@ ParseResult parseRequest(char* data, Request& request) {
     if(data[offset] == '?'){
         result.result == ParseResult::IN_PROGRESS;
         ++offset;
-        auto maxParameters = sizeof(Request::parameters) / sizeof(Parameter);
+        auto maxParameters = 32;
         for(int i = 0; i < maxParameters; ++i) {
             result = parseParameters(request, data + offset, 1024 - offset, Parameter::Type::GET);
             if(result.result != ParseResult::IN_PROGRESS)
@@ -229,7 +211,7 @@ ParseResult parseRequest(char* data, Request& request) {
     offset += result.end_at + 1 + CLFR_SIZE;
 
     result.result == ParseResult::IN_PROGRESS;
-    auto maxHeaders = sizeof(Request::headers) / sizeof(Header);
+    auto maxHeaders = 16;
     for(int i = 0; i < maxHeaders ; ++i){
         result = parseHeader(request, data + offset, 1024 - offset);
         if(result.result != ParseResult::IN_PROGRESS)
@@ -249,7 +231,7 @@ uint32_t strlen(const char* str) {
 static Response prepareResponse(tcp_pcb* pcb, const Request& request) {
     Response response;
 
-    response.write("OK", strlen("OK"));
+    response.write("OK");
 
     return response;
 }
@@ -269,7 +251,7 @@ static err_t sendHeaders(tcp_pcb* pcb, const Response& response) {
 }
 
 static err_t sendResponse(tcp_pcb* pcb, const Response& response){
-    tcp_write(pcb, response.payload, response.totalSize, TCP_WRITE_FLAG_COPY);
+    tcp_write(pcb, response.payload.c_str(), response.payload.size(), TCP_WRITE_FLAG_COPY);
     tcp_output(pcb);
 
     return ERR_OK;
@@ -427,12 +409,9 @@ bool WebServer::init(uint16_t port)
     return true;
 }
 
-Response &Response::write(const char *data, uint32_t size)
+Response &Response::write(const std::string &data)
 {
-    for(int i = 0; i < size; ++i)
-        payload[totalSize + i] = data[i];
-
-    totalSize += size;
+    payload += data;
 
     return *this;
 }

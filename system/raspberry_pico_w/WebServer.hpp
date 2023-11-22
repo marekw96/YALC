@@ -3,6 +3,9 @@
 #include "lwip/api.h"
 #include "lwip/tcp.h"
 
+#include <string>
+#include <vector>
+
 enum MethodType {GET = 1 << 0,
                  POST = 1 << 1,
                  HEAD = 1 << 2,
@@ -57,15 +60,15 @@ static const char* to_char(Version version){
 }
 
 struct Header {
-    char name[32] = {0};
-    char value[64] = {0};
+    std::string name;
+    std::string value;
 };
 
 struct Parameter {
     enum Type {POST, GET};
 
-    char name[32] = {0};
-    char value[256] = {0};
+    std::string name;
+    std::string value;
     Type type;
 };
 
@@ -140,35 +143,32 @@ enum class ResponseCode {
 struct Request {
     Version version;
     MethodType method;
-    char uri[64] = {0};
-    int usedHeaders = 0;
-    Header headers[16];
-    int usedParameters = 0;
-    Parameter parameters[32];
+    std::string uri;
+    std::vector<Header> headers;
+    std::vector<Parameter> parameters;
 };
 
 struct Response {
     ResponseCode code = ResponseCode::OK;
-    uint32_t totalSize = 0;
-    char payload[1500] = {0};
+    std::string payload;
 
-    Response& write(const char* data, uint32_t size);
+    Response& write(const std::string& data);
 };
 
 static void debug_print(const Request& request) {
     printf("Request:\n");
     printf("Version: %s\n", to_char(request.version));
     printf("Method: %s\n", to_char(request.method));
-    printf("Uri: %s\n", request.uri);
+    printf("Uri: %s\n", request.uri.c_str());
 
-    printf("Headers: %d\n", request.usedHeaders);
-    for(int i = 0; i < request.usedHeaders; ++i){
-        printf("\t%s:%s\n", request.headers[i].name, request.headers[i].value);
+    printf("Headers: %d\n", request.headers.size());
+    for(int i = 0; i < request.headers.size(); ++i){
+        printf("\t%s:%s\n", request.headers[i].name.c_str(), request.headers[i].value.c_str());
     }
 
-    printf("Parameters: %d\n", request.usedParameters);
-    for(int i = 0; i < request.usedParameters; ++i){
-        printf("\t[%s]%s:%s\n", to_char(request.parameters[i].type), request.parameters[i].name, request.parameters[i].value);
+    printf("Parameters: %d\n", request.parameters.size());
+    for(int i = 0; i < request.parameters.size(); ++i){
+        printf("\t[%s]%s:%s\n", to_char(request.parameters[i].type), request.parameters[i].name.c_str(), request.parameters[i].value.c_str());
     }
 }
 
