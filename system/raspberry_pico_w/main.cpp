@@ -73,6 +73,12 @@ void core_with_non_rt_stuff() {
         auto diff = time.current() - current;
         current = time.current();
         internet.periodic();
+
+        if(application.effectsManager->hasEffectChanged()) {
+            multicore_reset_core1();
+            multicore_launch_core1(core_with_python_animations);
+            application.effectsManager->restartedEffects();
+        }
     }
 
     internet.deinit();

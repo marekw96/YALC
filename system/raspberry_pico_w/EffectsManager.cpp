@@ -28,6 +28,7 @@ std::string EffectsManager::getEffectCode(uint32_t id)
 bool EffectsManager::selectEffect(uint32_t newId)
 {
     selectedEffect = newId;
+    effectChanged = true;
     printf("[EffectsManager]Changed effect to %d\n", newId);
     return true;
 }
@@ -35,4 +36,14 @@ bool EffectsManager::selectEffect(uint32_t newId)
 uint32_t EffectsManager::getSelectedEffectId()
 {
     return selectedEffect;
+}
+
+bool EffectsManager::hasEffectChanged()
+{
+    return effectChanged;
+}
+
+void EffectsManager::restartedEffects()
+{
+    effectChanged = false;
 }

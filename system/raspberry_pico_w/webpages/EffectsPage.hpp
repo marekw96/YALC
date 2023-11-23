@@ -10,4 +10,6 @@ public:
     RequestHandler getHandler();
 private:
     Application app;
+
+    void handleSelectingNewEffect(const Request& request, Response& response);
 };
