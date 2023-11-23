@@ -27,10 +27,12 @@ std::string EffectsManager::getEffectCode(uint32_t id)
 
 bool EffectsManager::selectEffect(uint32_t newId)
 {
-    selectedEffect = newId;
-    effectChanged = true;
-    printf("[EffectsManager]Changed effect to %d\n", newId);
-    return true;
+    if(newId < 2) {
+        selectedEffect = newId;
+        effectChanged = true;
+        printf("[EffectsManager]Changed effect to %d\n", newId);
+    }
+    return effectChanged;
 }
 
 uint32_t EffectsManager::getSelectedEffectId()

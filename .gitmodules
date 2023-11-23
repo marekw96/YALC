@@ -13,3 +13,6 @@
 [submodule "system/raspberry_pico_w/lib/picow-http"]
 	path = system/raspberry_pico_w/lib/picow-http
 	url = https://gitlab.com/slimhazard/picow_http.git
+[submodule "system/raspberry_pico_w/littlefs-lib"]
+	path = system/raspberry_pico_w/littlefs-lib
+	url = https://github.com/lurk101/littlefs-lib.git

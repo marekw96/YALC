@@ -55,9 +55,9 @@
 #define LWIP_DHCP_DOES_ACD_CHECK    0
 
 #ifndef NDEBUG
-#define LWIP_DEBUG                  1
-#define LWIP_STATS                  1
-#define LWIP_STATS_DISPLAY          1
+#define LWIP_DEBUG                  0
+#define LWIP_STATS                  0
+#define LWIP_STATS_DISPLAY          0
 #endif
 
 #define ETHARP_DEBUG                LWIP_DBG_OFF

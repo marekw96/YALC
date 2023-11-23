@@ -44,9 +44,11 @@ void EffectsPage::handleSelectingNewEffect(const Request &request, Response &res
     }
 
     auto id_str = request.uri.substr(part+1);
-    auto id = std::atoi(id_str.c_str());
+    uint32_t id = std::atoi(id_str.c_str());
     app.effectsManager->selectEffect(id);
     response.write("Changed to ");
     response.write(id_str);
     response.write("<br />");
+
+    app.storage->store("/cfg/eff_selected", id);
 }

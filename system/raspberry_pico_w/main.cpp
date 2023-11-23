@@ -17,6 +17,8 @@
 #include "webpages/ConnectionSettings.hpp"
 #include "webpages/EffectsPage.hpp"
 
+
+
 Application application;
 
 void core_with_python_animations(){
@@ -87,8 +89,20 @@ void core_with_non_rt_stuff() {
 int main() {
     stdio_init_all();
 
+    Storage storage;
+    application.storage;
+
     EffectsManager effectsManager(application);
     application.effectsManager = &effectsManager;
+
+    if(!application.storage->init(Storage::DO_NOT_FORMAT)) {
+        printf("Failed to init storage \n");
+    }
+    else {
+        storage.makeDir("cfg");
+    }
+
+    application.effectsManager->selectEffect(storage.read_uint32_t("cfg/eff_selected"));
 
     multicore_launch_core1(core_with_python_animations);
     core_with_non_rt_stuff();
