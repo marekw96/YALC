@@ -11,7 +11,11 @@
 #include "lwip/init.h"
 #include "pico/cyw43_arch.h"
 #include "pico/multicore.h"
+#include "Application.hpp"
 
+#include "webpages/ConnectionSettings.hpp"
+
+Application application;
 
 void core_with_python_animations(){
     printf("[core_with_python_animations] starting\n");
@@ -41,6 +45,8 @@ void core_with_non_rt_stuff() {
     InternetManager internet;
     WebServer webServer;
 
+    application.internetManager = &internet;
+
     internet.init();
     if(internet.connect_to("SSID", "passwd")){
         printf("Unable to connect\n");
@@ -52,6 +58,9 @@ void core_with_non_rt_stuff() {
 
     internet.start();
     webServer.init(80);
+
+    ConnectionSettingsPage connectionSettingsPage(application);
+    webServer.registerHandler(connectionSettingsPage.getHandler());
 
     auto current = time.current();
     while(true) {
@@ -65,11 +74,6 @@ void core_with_non_rt_stuff() {
 
 int main() {
     stdio_init_all();
-
-    for(int i = 5; i > 0; --i){
-        printf("-wait %d\n", i);
-        sleep_ms(1000);
-    }
 
     multicore_launch_core1(core_with_python_animations);
     core_with_non_rt_stuff();

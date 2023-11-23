@@ -163,9 +163,11 @@ struct Response {
     Response& write(const std::string& data);
 };
 
+typedef Response (*RequestHandlerFunc)(void* obj, const Request&);
+
 struct RequestHandler {
     std::string uri;
-    Response (*handler)(void* obj, const Request& request);
+    RequestHandlerFunc handler;
     void* handlerObject;
 };
 

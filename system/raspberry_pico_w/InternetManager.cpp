@@ -61,6 +61,11 @@ void InternetManager::start(){
     printf("IP: %s\n",ip4addr_ntoa(netif_ip4_addr(netif_default)));
 }
 
+ConnectionStatus InternetManager::getStatus()
+{
+    return ConnectionStatus();
+}
+
 bool InternetManager::connect_to(const char *ssid, const char *passwd)
 {
     printf("InternetManager::connect_to\n");

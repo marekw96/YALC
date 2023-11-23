@@ -75,7 +75,7 @@ uint32_t WS2812::convertData(uint32_t rgbw) {
         }
         result <<= 8;
     }
-    return result;
+    return rgbw << 8;
 }
 
 void WS2812::setPixelColor(uint index, uint32_t color) {
