@@ -230,7 +230,15 @@ uint32_t strlen(const char* str) {
 
 Response WebServer::prepareResponse(tcp_pcb* pcb, const Request& request) {
     for(auto& handler: handlers){
-        if(handler.uri == request.uri)
+        auto uri = handler.uri;
+        bool capture = false;
+        if(uri.back() == '*') {
+            uri.pop_back();
+            uri.pop_back();
+            capture = true;
+        }
+
+        if(capture?request.uri.find(uri) == 0: uri == request.uri)
         {
             return handler.handler(handler.handlerObject, request);
         }
