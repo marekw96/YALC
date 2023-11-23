@@ -1,5 +1,7 @@
 #include "ConnectionSettings.hpp"
 
+#include "InternetManager.hpp"
+
 ConnectionSettingsPage::ConnectionSettingsPage(Application &app)
     :app(app)
 {}

@@ -5,15 +5,17 @@
 #include "ws2812/ws2812.hpp"
 #include "ws2812/LedString_ws2812.hpp"
 #include "../pythonAnimations/AnimationEngine.hpp"
-#include "../pythonAnimations/MyAnimation.py.hpp"
+
 #include "InternetManager.hpp"
 #include "WebServer.hpp"
 #include "lwip/init.h"
 #include "pico/cyw43_arch.h"
 #include "pico/multicore.h"
 #include "Application.hpp"
+#include "EffectsManager.hpp"
 
 #include "webpages/ConnectionSettings.hpp"
+#include "webpages/EffectsPage.hpp"
 
 Application application;
 
@@ -25,7 +27,7 @@ void core_with_python_animations(){
     auto* vm = new AnimationEngine(ledString);
 
     vm->init();
-    vm->createAnimation(MyAnimation_py);
+    vm->createAnimation(application.effectsManager->getEffectCode(application.effectsManager->getSelectedEffectId()));
 
     auto current = time.current();
     while(true) {
@@ -45,7 +47,9 @@ void core_with_non_rt_stuff() {
     InternetManager internet;
     WebServer webServer;
 
+
     application.internetManager = &internet;
+
 
     internet.init();
     if(internet.connect_to("SSID", "passwd")){
@@ -60,7 +64,9 @@ void core_with_non_rt_stuff() {
     webServer.init(80);
 
     ConnectionSettingsPage connectionSettingsPage(application);
+    EffectsPage effectsPage(application);
     webServer.registerHandler(connectionSettingsPage.getHandler());
+    webServer.registerHandler(effectsPage.getHandler());
 
     auto current = time.current();
     while(true) {
@@ -74,6 +80,9 @@ void core_with_non_rt_stuff() {
 
 int main() {
     stdio_init_all();
+
+    EffectsManager effectsManager(application);
+    application.effectsManager = &effectsManager;
 
     multicore_launch_core1(core_with_python_animations);
     core_with_non_rt_stuff();

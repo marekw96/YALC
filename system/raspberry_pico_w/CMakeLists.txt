@@ -24,6 +24,8 @@ list(APPEND "RPI_PICO_W_SRC" "system/raspberry_pico_w/Socket.cpp")
 list(APPEND "RPI_PICO_W_SRC" "system/raspberry_pico_w/InternetManager.cpp")
 list(APPEND "RPI_PICO_W_SRC" "system/raspberry_pico_w/WebServer.cpp")
 list(APPEND "RPI_PICO_W_SRC" "system/raspberry_pico_w/webpages/ConnectionSettings.cpp")
+list(APPEND "RPI_PICO_W_SRC" "system/raspberry_pico_w/webpages/EffectsPage.cpp")
+list(APPEND "RPI_PICO_W_SRC" "system/raspberry_pico_w/EffectsManager.cpp")
 
 
 add_executable(RpiPicoW_YALC ${YALC_PROTOCOL_SRC}  ${RPI_PICO_W_SRC})
