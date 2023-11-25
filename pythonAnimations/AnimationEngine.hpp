@@ -8,7 +8,7 @@ extern "C" {
     int (*func_to_get_numer_of_pixels)(void);
 
     void set_pixel_id_r_g_b(int id , int r , int g, int b){
-        func_to_set_pixel(id, r,g,b);
+        func_to_set_pixel(id, r, g, b);
     }
 
     int get_number_of_pixels() {
@@ -35,11 +35,18 @@ class AnimationEngine {
         }
 
         void init(){
+            if(initDone) {
+                return;
+            }
+            for(int i = 0; i < sizeof(heap); ++i) heap[i] = 0;
+
             mp_embed_init(&heap[0], sizeof(heap));
 
             bindGetNumberOfPixels();
             bindSetPixelColorRGB();
             execYALCAnimationBaseClass();
+
+            initDone = true;
         }
 
         void periodic(Duration diff) {
@@ -61,11 +68,20 @@ class AnimationEngine {
         }
 
         void bindSetPixelColorRGB() {
-            func_to_set_pixel = [](int id, int r, int g, int b) -> void {
-                Display* display = reinterpret_cast<Display*>(display_obj);
-                byte data[] = {(byte)r,(byte)g,(byte)b};
-                display->setColors(id, data, 1);
-            };
+            if(display.colorOrder() == YALC::ColorOrder::GRB) {
+                func_to_set_pixel = [](int id, int r, int g, int b) -> void {
+                    Display* display = reinterpret_cast<Display*>(display_obj);
+                    byte data[] = {(byte)g,(byte)r,(byte)b};
+                    display->setColors(id, data, 1);
+                };
+            }
+            else {
+                func_to_set_pixel = [](int id, int r, int g, int b) -> void {
+                    Display* display = reinterpret_cast<Display*>(display_obj);
+                    byte data[] = {(byte)r,(byte)g,(byte)b};
+                    display->setColors(id, data, 1);
+                };
+            }
         }
 
         void execYALCAnimationBaseClass(){
@@ -77,4 +93,5 @@ class AnimationEngine {
         }
 
         Display& display;
+        bool initDone = false;
 };

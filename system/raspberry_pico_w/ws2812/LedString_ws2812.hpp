@@ -7,6 +7,7 @@ class LedString_ws2812 {
     public:
         LedString_ws2812(uint32_t pin, uint32_t pixelsNum);
 
+        void init();
         void update();
 
         //YALC specyfic functions

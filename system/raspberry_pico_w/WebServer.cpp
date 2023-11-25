@@ -1,16 +1,20 @@
 #include "WebServer.hpp"
 #include "lwipopts.h"
 
-struct httpState {
-    WebServer* webserver;
-    tcp_pcb* socket;
-    int tries;
-};
-
 enum class ParseResult {
     DONE,
     IN_PROGRESS,
     ERROR
+};
+
+struct httpState {
+    WebServer* webserver;
+    tcp_pcb* socket;
+    int tries;
+    char payload[8*1024];
+    uint32_t parsed;
+    uint32_t payloadSize;
+    ParseResult parseResult;
 };
 
 const char* to_char(ParseResult result){
@@ -142,8 +146,90 @@ ParseProgress parseHeader(Request& request, char* data, uint32_t data_size) {
     return {ParseResult::IN_PROGRESS, separator_pos+ value_pos + 4};
 }
 
+std::string escapeHTML(const std::string& data) {
+    struct pair {std::string key; char value;};
+    static pair pairs[] = {
+        {"20", ' '},
+        {"21", '!'},
+        {"22", '"'},
+        {"23", '#'},
+        {"24", '$'},
+        {"25", '%'},
+        {"26", '&'},
+        {"27", '\''},
+        {"28", '('},
+        {"29", ')'},
+        {"2A", '*'},
+        {"2B", '+'},
+        {"2C", ','},
+        {"2D", '-'},
+        {"2E", '.'},
+        {"3A", ':'},
+        {"3B", ';'},
+        {"3C", '<'},
+        {"3D", '='},
+        {"3E", '>'},
+        {"3F", '?'},
+        {"40", '@'},
+        {"5B", '['},
+        {"5C", '\\'},
+        {"5D", ']'},
+        {"5E", '^'},
+        {"5F", '_'},
+        {"60", '`'},
+        {"7B", '{'},
+        {"7C", '|'},
+        {"7D", '}'},
+        {"7E", '~'},
+        {"0A", '\n'},
+        {"0D", '\r'},
+        {"09", '\t'},
+    };
+
+    auto findReplace = [](const std::string& key) -> char {
+        for(const auto& item: pairs){
+            if(key == item.key) {
+                return item.value;
+            }
+        }
+
+        printf("[WebServer] Unable to find encoded value %s\n", key.c_str());
+        return ' ';
+    };
+
+    std::string output;
+    output.reserve(data.size());
+
+    std::string tmp;
+    bool parsingChar = false;
+
+    for(auto letter : data) {
+        if(letter == '%') {
+            parsingChar = true;
+        }
+        else if(letter == '+') {
+            output.push_back(' ');
+        }
+        else if(parsingChar) {
+            tmp.push_back(letter);
+
+            if(tmp.size() >= 2) {
+                auto replace = findReplace(tmp);
+                output.push_back(replace);
+                tmp = "";
+                parsingChar = false;
+            }
+        }
+        else {
+            output.push_back(letter);
+        }
+    }
+
+    return output;
+}
+
 ParseProgress parseParameters(Request& request, char* data, uint32_t data_size, Parameter::Type type) {
-    if(data[0] == ' ')
+    if(data[0] == ' ' || data[0] == 0)
         return {ParseResult::DONE, 1};
 
     if(data[0] == '&')
@@ -151,7 +237,10 @@ ParseProgress parseParameters(Request& request, char* data, uint32_t data_size, 
 
     //Find and copy name
     auto separator_pos = 0u;
-    for(separator_pos; separator_pos < data_size && data[separator_pos] != '='  && data[separator_pos] != ' '; ++separator_pos){}
+    for(separator_pos; separator_pos < data_size && data[separator_pos] != '='  && data[separator_pos] != ' ' && data[separator_pos] != 0; ++separator_pos){}
+
+    //printf("data_size %d\n", data_size);
+    //printf("separator_pos %d\n", separator_pos);
 
     if(separator_pos == data_size)
         return {ParseResult::ERROR, 0};
@@ -162,33 +251,40 @@ ParseProgress parseParameters(Request& request, char* data, uint32_t data_size, 
     auto* data2 = data + separator_pos + 1;
     data_size -= separator_pos + 1;
     auto value_pos = 0u;
-    for(value_pos; value_pos < data_size && data2[value_pos] != '&' && data2[value_pos] != ' '; ++value_pos){}
+    for(value_pos; value_pos <= data_size && data2[value_pos] != '&' && data2[value_pos] != ' ' && data2[value_pos] != 0; ++value_pos){}
 
-    if(value_pos == data_size)
+    // printf("value_pos %d\n", value_pos);
+    // printf("data2[value_pos] %c\n", data2[value_pos-1]);
+    // printf("data2[value_pos] %d\n", data2[value_pos-1]);
+    // printf("end %d\n", separator_pos + 1 + value_pos);
+
+    if(type == Parameter::Type::GET && value_pos == data_size)
         return {ParseResult::ERROR, 0};
     if(value_pos == 0)
         return {ParseResult::DONE, 0};
 
     Parameter newParameter;
     newParameter.type = type;
-    newParameter.name = std::string(data, separator_pos);
-    newParameter.value = std::string(data2, value_pos);
+    newParameter.name = escapeHTML(std::string(data, separator_pos));
+    newParameter.value = escapeHTML(std::string(data2, value_pos));
     request.parameters.push_back(newParameter);
+
+    //printf("Added new parameter: %s -> %s\n", newParameter.name.c_str(), newParameter.value.c_str());
 
     return {ParseResult::IN_PROGRESS, separator_pos+ value_pos+1};
 }
 
-ParseResult parseRequest(char* data, Request& request) {
+ParseProgress parseHeaders(char* data, Request& request) {
     constexpr int CLFR_SIZE = 2;
-    auto offset = 0;
-    auto result = parseMethod(request, data, 1024);
+    auto offset = 0u;
+    auto result = parseMethod(request, data, 8*1024);
     if(result.result == ParseResult::ERROR)
-        return ParseResult::ERROR;
+        return {ParseResult::ERROR, offset};
     offset += result.end_at + 1;
 
-    result = parseUri(request, data + offset, 1024 - offset);
+    result = parseUri(request, data + offset, 8*1024 - offset);
     if(result.result == ParseResult::ERROR)
-        return ParseResult::ERROR;
+        return {ParseResult::ERROR, offset};
     offset += result.end_at;
 
     if(data[offset] == '?'){
@@ -196,7 +292,7 @@ ParseResult parseRequest(char* data, Request& request) {
         ++offset;
         auto maxParameters = 32;
         for(int i = 0; i < maxParameters; ++i) {
-            result = parseParameters(request, data + offset, 1024 - offset, Parameter::Type::GET);
+            result = parseParameters(request, data + offset, 8*1024 - offset, Parameter::Type::GET);
             if(result.result != ParseResult::IN_PROGRESS)
                 break;
 
@@ -205,21 +301,22 @@ ParseResult parseRequest(char* data, Request& request) {
     }
     ++offset;
 
-    result = parseHttpVersion(request, data + offset, 1024 - offset);
+    result = parseHttpVersion(request, data + offset, 8*1024 - offset);
     if(result.result == ParseResult::ERROR)
-        return ParseResult::ERROR;
+        return {ParseResult::ERROR, offset};
     offset += result.end_at + 1 + CLFR_SIZE;
 
     result.result == ParseResult::IN_PROGRESS;
     auto maxHeaders = 16;
     for(int i = 0; i < maxHeaders ; ++i){
-        result = parseHeader(request, data + offset, 1024 - offset);
+        result = parseHeader(request, data + offset, 8*1024 - offset);
         if(result.result != ParseResult::IN_PROGRESS)
             break;
 
         offset += result.end_at;
     }
-    return result.result;
+
+    return {result.result, offset};
 }
 
 uint32_t strlen(const char* str) {
@@ -270,6 +367,45 @@ static err_t sendResponse(tcp_pcb* pcb, const Response& response){
     return ERR_OK;
 }
 
+static ParseProgress parsePOST(char* data, uint32_t size, Request& request) {
+    auto contentLength = size;
+
+    for(const auto& header: request.headers) {
+        if(header.name == "Content-Length") {
+            contentLength = std::atoi(header.value.c_str());
+            if(contentLength == 0)
+                return {ParseResult::ERROR, 0};
+            break;
+        }
+    }
+
+    // printf("Content-Length: %d\n", contentLength);
+    // printf("Size: %d\n", size);
+
+    if(contentLength + 2 > size) {
+        return {ParseResult::IN_PROGRESS, 0};
+    }
+
+    ParseProgress result;
+
+    result.result == ParseResult::IN_PROGRESS;
+    result.end_at = 2;
+    auto maxParameters = 32;
+    for(int i = 0; i < maxParameters; ++i) {
+        auto partialResult = parseParameters(request, data + result.end_at, contentLength - result.end_at+1, Parameter::Type::POST);
+        if(partialResult.result != ParseResult::IN_PROGRESS)
+            break;
+
+        result.end_at += partialResult.end_at;
+
+        if(result.end_at >= contentLength)
+            break;
+    }
+
+    result.result = ParseResult::DONE;
+    return result;
+}
+
 static err_t http_recv(void *arg, tcp_pcb *pcb, pbuf *p, err_t err)
 {
     httpState *hs = (httpState *)arg;
@@ -290,20 +426,33 @@ static err_t http_recv(void *arg, tcp_pcb *pcb, pbuf *p, err_t err)
         return ERR_OK;
     }
 
-    char part[1024] = {0};
-    pbuf_copy_partial(p, part, sizeof(part), 0);
-    part[1023] = 0;
-
-    Request request;
-    parseRequest(part, request);
-    printRequestLight(request);
-    auto response = hs->webserver->prepareResponse(pcb, request);
-
-    sendHeaders(pcb, response);
-    sendResponse(pcb, response);
-
+    auto len = p->tot_len;
+    pbuf_copy_partial(p, hs->payload + hs->payloadSize, 8*1024, 0);
     tcp_recved(pcb, p->tot_len);
     pbuf_free(p);
+    hs->payloadSize += len;
+    hs->payload[len] = 0;
+    //printf("PAYLOAD[%d]\n%s\n------------\n",len, hs->payload);
+
+    Request request;
+    auto result = parseHeaders(hs->payload, request);
+    hs->parsed = result.end_at;
+    // printf("hs->parsed: %d\n", hs->parsed);
+    // printf("hs->payloadSize: %d\n", hs->payloadSize);
+    printRequestLight(request);
+
+    if(request.method == MethodType::POST) {
+        result = parsePOST(hs->payload + hs->parsed, hs->payloadSize - hs->parsed, request);
+    }
+
+    //printf("result.result: %s\n", to_char(result.result));
+
+    if(result.result == ParseResult::DONE) {
+        auto response = hs->webserver->prepareResponse(pcb, request);
+
+        sendHeaders(pcb, response);
+        sendResponse(pcb, response);
+    }
 
     return ERR_OK;
 }
@@ -386,6 +535,9 @@ static err_t tcp_accept(void *arg, tcp_pcb *newpcb, err_t err)
     state->socket = newpcb;
     state->webserver = server;
     state->tries = 0;
+    state->parseResult = ParseResult::IN_PROGRESS;
+    state->payloadSize = 0;
+    state->parsed = 0;
     tcp_arg(newpcb, state);
 
     tcp_recv(newpcb, http_recv);

@@ -14,6 +14,9 @@ Response EffectsPage::handle(const Request &request)
     if(request.uri.find("/effects/select/") == 0){
         handleSelectingNewEffect(request, response);
     }
+    if(request.uri.find("/effects/add") == 0){
+        handleAddingNewEffect(request, response);
+    }
 
     response.write("Effects list:");
     response.write("<ul>");
@@ -21,6 +24,15 @@ Response EffectsPage::handle(const Request &request)
         response.write(std::string("<li><a href=\"/effects/select/") + std::to_string(effect.id) + "\">" + effect.name + "</a></li>");
     }
     response.write("</ul>");
+
+    std::string name = "";
+    std::string code = "";
+
+    response.write("<form method=\"POST\" action=\"/effects/add\">");
+    response.write(std::string("Name: <input type=\"text\" name=\"name\" value =\"") + name + "\"><br />");
+    response.write(std::string("Content: <textarea name=\"code\" rows=\"20\" cols=\"100\">") + code + "</textarea><br />");
+    response.write("<button>Add</button><br />");
+    response.write("</form>");
 
     return response;
 }
@@ -49,6 +61,28 @@ void EffectsPage::handleSelectingNewEffect(const Request &request, Response &res
     response.write("Changed to ");
     response.write(id_str);
     response.write("<br />");
+}
 
-    app.storage->store("/cfg/eff_selected", id);
+void EffectsPage::handleAddingNewEffect(const Request &request, Response &response)
+{
+    std::string name = "";
+    std::string code = "";
+    for(const auto& parameter: request.parameters){
+        if(parameter.name == "name")
+            name = parameter.value;
+        if(parameter.name == "code")
+            code = parameter.value;
+    }
+
+    if(name.size() == 0 || code.size() == 0){
+        response.write("<p>Please provide name and code</p>");
+        return;
+    }
+
+    auto result = app.effectsManager->addNewEffect(name, code);
+
+    if(result)
+        response.write("Added new effect!<br />");
+    else
+        response.write("Failed to add new effect!<br />");
 }
