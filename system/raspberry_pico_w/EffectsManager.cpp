@@ -101,6 +101,27 @@ bool EffectsManager::addNewEffect(const std::string &name, const std::string &co
     return true;
 }
 
+bool EffectsManager::removeEffect(uint32_t id)
+{
+    for(int i = 0; i < effects.size(); ++i) {
+        const auto& effect = effects[i];
+        if(effect.id == id && effect.type == EffectType::USER_DEFINED) {
+            std::string path = std::string("eff/e_") + std::to_string(effect.id);
+            auto codePath = path + "/code";
+            auto namePath = path + "/name";
+            app.storage->remove(codePath.c_str());
+            app.storage->remove(namePath.c_str());
+            app.storage->remove(path.c_str());
+            effects.erase(effects.begin() + i);
+
+            if(selectedEffect == id)
+                selectedEffect = 0;
+            return true;
+        }
+    }
+    return false;
+}
+
 std::string EffectsManager::fetchEffectCode(uint32_t id)
 {
     auto path = std::string("eff/e_") + std::to_string(id) + "/code";

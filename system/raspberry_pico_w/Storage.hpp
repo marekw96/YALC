@@ -18,7 +18,11 @@ public:
     std::string read_string(const char* path);
     bool makeDir(const char* path, bool block = true);
     int iterateOverDirectory(const char* path, DirectoryIteratorFunc handler, void* obj);
+    bool removeWholeDirectory(const char* path);
+    bool remove(const char* path);
 
 private:
     void remount();
+
+    bool removeWholeDirectoryImpl(const char* path, const DirEntryInfo& info);
 };

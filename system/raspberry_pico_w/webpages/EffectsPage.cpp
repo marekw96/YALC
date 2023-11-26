@@ -17,11 +17,18 @@ Response EffectsPage::handle(const Request &request)
     if(request.uri.find("/effects/add") == 0){
         handleAddingNewEffect(request, response);
     }
+    if(request.uri.find("/effects/remove") == 0) {
+        handleRemovingEffect(request, response);
+    }
 
     response.write("Effects list:");
     response.write("<ul>");
     for(const auto& effect: app.effectsManager->getListOfEffects()) {
-        response.write(std::string("<li><a href=\"/effects/select/") + std::to_string(effect.id) + "\">" + effect.name + "</a></li>");
+        response.write("<li>");
+        response.write(std::string("<a href=\"/effects/select/") + std::to_string(effect.id) + "\">" + effect.name + "</a>");
+        if(effect.id != app.effectsManager->getSelectedEffectId())
+            response.write(std::string("  <a href=\"/effects/remove/") + std::to_string(effect.id) + "\">X</a>");
+        response.write("</li>");
     }
     response.write("</ul>");
 
@@ -85,4 +92,29 @@ void EffectsPage::handleAddingNewEffect(const Request &request, Response &respon
         response.write("Added new effect!<br />");
     else
         response.write("Failed to add new effect!<br />");
+}
+
+void EffectsPage::handleRemovingEffect(const Request &request, Response &response)
+{
+    auto part = request.uri.rfind("/");
+    if(part == request.uri.length()-1) {
+        response.write("Unable to  effect<br />");
+        return;
+    }
+
+    auto id_str = request.uri.substr(part+1);
+    uint32_t id = std::atoi(id_str.c_str());
+
+    if(id == app.effectsManager->getSelectedEffectId()) {
+        response.write("Cannot remove selected effect<br />");
+        return;
+    }
+
+    auto result = app.effectsManager->removeEffect(id);
+    if(result) {
+        response.write("Effect removed<br />");
+    }
+    else {
+        response.write("Failed during effect removing<br />");
+    }
 }

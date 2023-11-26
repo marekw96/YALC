@@ -148,6 +148,24 @@ int Storage::iterateOverDirectory(const char *path, DirectoryIteratorFunc handle
     return cnt;
 }
 
+bool Storage::removeWholeDirectory(const char *path)
+{
+    printf("[Storage]removeWholeDirectory %s\n", path);
+    iterateOverDirectory(path, reinterpret_cast<Storage::DirectoryIteratorFunc>(&Storage::removeWholeDirectoryImpl), this);
+    return true;
+}
+
+bool Storage::remove(const char *path)
+{
+    printf("[Storage]remove %s\n", path);
+    auto result = pico_remove(path);
+    if(result < 0 ) {
+        printf("Storage::remove(%s) failed: %s\n", path, pico_errmsg(result));
+    }
+
+    return result == LFS_ERR_OK;
+}
+
 void Storage::remount()
 {
     auto result = pico_unmount();
@@ -158,5 +176,22 @@ void Storage::remount()
     result = pico_mount(false);
     if(result < 0 ) {
         printf("Storage::remount mount failed: %s\n", pico_errmsg(result));
+    }
+}
+
+bool Storage::removeWholeDirectoryImpl(const char *path, const DirEntryInfo &info)
+{
+    std::string name = info.name;
+    if(name == "." || name == "..")
+        return false;
+
+    auto newPath = std::string(path) + "/" + name;
+    printf("[Storage]removeWholeDirectoryImpl[%s] %s\n", path, newPath.c_str());
+
+    if(info.type == LFS_TYPE_DIR){
+        return removeWholeDirectory(newPath.c_str());
+    }
+    else {
+        return remove(newPath.c_str());
     }
 }

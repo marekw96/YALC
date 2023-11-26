@@ -28,6 +28,7 @@ public:
     bool hasEffectChanged();
     void restartedEffects();
     bool addNewEffect(const std::string& name, const std::string& code);
+    bool removeEffect(uint32_t id);
 
 private:
     Application& app;
