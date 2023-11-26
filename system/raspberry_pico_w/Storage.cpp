@@ -1,6 +1,5 @@
 #include "Storage.hpp"
 
-#include "pico_hal.h"
 #include "pico/multicore.h"
 
 constexpr auto ONE_SEC_IN_US = 1'000'000;
@@ -127,6 +126,26 @@ bool Storage::makeDir(const char *path, bool block)
     }
 
     return result == LFS_ERR_OK;
+}
+
+int Storage::iterateOverDirectory(const char *path, DirectoryIteratorFunc handler, void* obj)
+{
+    int cnt = 0;
+    int dir = pico_dir_open(path);
+    lfs_info info;
+    if(dir < 0) {
+        printf("Storage::iterateOverDirectory[%s] dir open failed: %s\n", path, pico_errmsg(dir));
+        return cnt;
+    }
+
+    while(pico_dir_read(dir, &info) > 0) {
+        handler(obj, info);
+        ++cnt;
+    }
+
+    pico_dir_close(dir);
+
+    return cnt;
 }
 
 void Storage::remount()

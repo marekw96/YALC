@@ -4,6 +4,7 @@
 
 #include <string>
 #include <vector>
+#include "Storage.hpp"
 
 enum class EffectType {
     BUILTIN, USER_DEFINED
@@ -37,4 +38,6 @@ private:
 
     std::string fetchEffectCode(uint32_t id);
     void registerNewEffect(int id, const std::string& name);
+    void readAllStoredEffects();
+    void storedDirEntry(const Storage::DirEntryInfo& entry);
 };

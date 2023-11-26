@@ -16,6 +16,8 @@ bool EffectsManager::init()
 
     printf("[EffectsManager]lastRegisteredId: %d\n", lastRegisteredId);
 
+    readAllStoredEffects();
+
     return true;
 }
 
@@ -113,5 +115,30 @@ void EffectsManager::registerNewEffect(int id, const std::string &name)
     effect.id = id;
     effect.type = EffectType::USER_DEFINED;
 
+    printf("[EffectsManager][registerNewEffect]id: %d, name: %s, type: USER_DEFINED\n", id, name.c_str());
+
     effects.emplace_back(std::move(effect));
+}
+
+void EffectsManager::readAllStoredEffects()
+{
+    printf("[EffectsManager]readAllStoredEffects\n");
+    app.storage->iterateOverDirectory("eff", reinterpret_cast<Storage::DirectoryIteratorFunc>(&EffectsManager::storedDirEntry), this);
+    printf("[EffectsManager]readAllStoredEffects done.\n");
+}
+
+void EffectsManager::storedDirEntry(const Storage::DirEntryInfo &entry)
+{
+    printf("[EffectsManager][storedDirEntry]entry name %s\n", entry.name);
+    std::string entryName = entry.name;
+    if(entryName.find("e_") == 0) {
+        std::string idString = entryName.substr(2);
+        if(idString.size() == 0)
+            return;
+        uint32_t id = std::stoi(idString);
+
+        auto path = std::string("eff/") + entryName + "/name";
+        auto effectName = app.storage->read_string(path.c_str());
+        registerNewEffect(id, effectName);
+    }
 }

@@ -136,7 +136,7 @@ int main() {
     EffectsManager effectsManager(application);
     application.effectsManager = &effectsManager;
 
-    if(!application.storage->init(Storage::FORMAT)) {
+    if(!application.storage->init(Storage::DO_NOT_FORMAT)) {
         printf("Failed to init storage \n");
     }
     else {
@@ -146,8 +146,6 @@ int main() {
     if(!application.effectsManager->init()) {
         printf("Failed to init effectsManager but keep going... \n");
     }
-    application.effectsManager->selectEffect(storage.read_uint32_t("cfg/eff_selected"));
-
     multicore_launch_core1(core_with_python_animations);
 
     printf("Wait until core 1 is set to lockout victim\n");
@@ -162,6 +160,8 @@ int main() {
             break;
         }
     }
+
+    application.effectsManager->selectEffect(storage.read_uint32_t("cfg/eff_selected"));
     core_with_non_rt_stuff();
 
     return 0;
