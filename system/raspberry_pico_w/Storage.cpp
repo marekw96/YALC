@@ -3,6 +3,8 @@
 #include "pico_hal.h"
 #include "pico/multicore.h"
 
+constexpr auto ONE_SEC_IN_US = 1'000'000;
+
 void dump_stats(const char* fnc) {
     struct pico_fsstat_t stat;
     pico_fsstat(&stat);
@@ -26,9 +28,10 @@ bool Storage::store(const char *path, uint32_t value)
     if(file < 0) {
         return false;
     }
-    if(multicore_lockout_start_timeout_us(1000)) {
+    if(!multicore_lockout_start_timeout_us(ONE_SEC_IN_US)) {
         printf("Failed to enter to lockout state!\n");
     }
+
     auto bytesWritten = pico_write(file, &value, sizeof(value));
     if(bytesWritten < 0) {
         printf("Storage::store(uint32_t)[%s] write failed: %s\n", path, pico_errmsg(bytesWritten));
@@ -58,7 +61,7 @@ bool Storage::store(const char *path, const std::string &value)
         return false;
     }
 
-    if(multicore_lockout_start_timeout_us(1000)) {
+    if(!multicore_lockout_start_timeout_us(ONE_SEC_IN_US)) {
         printf("Failed to enter to lockout state!\n");
     }
     auto bytesWritten = pico_write(file, value.c_str(), value.size());
@@ -92,13 +95,16 @@ uint32_t Storage::read_uint32_t(const char *path)
 
 std::string Storage::read_string(const char *path)
 {
-    std::string value;
     int file = pico_open(path, LFS_O_RDWR | LFS_O_CREAT);
-    if(file < 0) { return 0; }
+    if(file < 0) {
+        printf("Storage::read<string>[%s] failed to open %s\n", path, pico_errmsg(file));
+        return "";
+    }
     auto size = pico_size(file);
-    value.resize(size);
-    pico_read(file, value.data(), size);
+    std::string value(size+1, 0);
+    pico_read(file, &value[0], size);
     pico_close(file);
+
     return value;
 }
 
@@ -108,7 +114,7 @@ bool Storage::makeDir(const char *path, bool block)
     printf("Store::makeDir %s %s\n", path, block?"Blocking":"Non-Blocking");
 
     if(block){
-        if(multicore_lockout_start_timeout_us(1000)) {
+        if(!multicore_lockout_start_timeout_us(ONE_SEC_IN_US)) {
             printf("Failed to enter to lockout state!\n");
         }
     }

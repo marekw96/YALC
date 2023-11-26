@@ -31,7 +31,12 @@ class AnimationEngine {
         }
 
         ~AnimationEngine() {
+            deinit();
+        }
+
+        void deinit() {
             mp_embed_deinit();
+            initDone = false;
         }
 
         void init(){

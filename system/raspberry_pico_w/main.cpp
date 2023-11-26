@@ -30,8 +30,10 @@ enum CoreCommunicationStatus {
 void core_with_python_animations(){
     printf("[core_with_python_animations] starting\n");
     multicore_lockout_victim_init();
-    while(1)
+    while(1){
+        sleep_ms(100);
         tight_loop_contents();
+    }
     Time time;
 
     LedString_ws2812 ledString(1, 100);
@@ -58,6 +60,7 @@ void core_with_python_animations(){
                 application.effectsManager->restartedEffects();
                 break;
             }
+            sleep_ms(50);
         }
     }
 
@@ -89,11 +92,31 @@ void core_with_non_rt_stuff() {
     webServer.registerHandler(connectionSettingsPage.getHandler());
     webServer.registerHandler(effectsPage.getHandler());
 
+    LedString_ws2812 ledString(1, 100);
+    AnimationEngine vm(ledString);
+
+    ledString.init();
+    vm.init();
+    //vm.createAnimation(application.effectsManager->getEffectCode(application.effectsManager->getSelectedEffectId()));
+    vm.createAnimation(FallingStar_py);
+
     auto current = time.current();
     while(true) {
         auto diff = time.current() - current;
         current = time.current();
         internet.periodic();
+
+        ledString.update();
+        vm.periodic(diff);
+        if(application.effectsManager->hasEffectChanged()) {
+            printf("MAIN changing effect\n");
+            auto code = application.effectsManager->getEffectCode(application.effectsManager->getSelectedEffectId());
+            vm.deinit();
+            vm.init();
+            vm.createAnimation(code);
+            application.effectsManager->restartedEffects();
+            printf("Main effect restarted\n");
+        }
     }
 
     internet.deinit();
@@ -126,6 +149,19 @@ int main() {
     application.effectsManager->selectEffect(storage.read_uint32_t("cfg/eff_selected"));
 
     multicore_launch_core1(core_with_python_animations);
+
+    printf("Wait until core 1 is set to lockout victim\n");
+    int i = 0;
+    while(true){
+        sleep_ms(1000);
+        if(!multicore_lockout_victim_is_initialized(1)) {
+            printf("[%d]Still nothing\n", i++);
+        }
+        else{
+            printf("Ready!\n");
+            break;
+        }
+    }
     core_with_non_rt_stuff();
 
     return 0;

@@ -33,10 +33,8 @@ std::string EffectsManager::getEffectCode(uint32_t id)
         return FallingStar_py;
     }
     else {
-        return "";
-        printf("fetching code from flash\n");
+        printf("[EffectsManager]fetching code from flash\n");
         auto code = fetchEffectCode(id);
-        printf("getEffectCode \n%s\n", code.c_str());
         return code;
     }
 
@@ -75,23 +73,23 @@ bool EffectsManager::addNewEffect(const std::string &name, const std::string &co
     printf("Adding new effect with id %d\n", id);
     app.storage->makeDir("eff");
 
-    auto path = std::string("eff/e_") + name;
-    // if(!app.storage->makeDir(path.c_str())){
-    //     printf("[EffectsManager] failed to create directory for effect. but moving on...\n");
-    //     //return false;
-    // }
+    auto path = std::string("eff/e_") + std::to_string(id);
+    if(!app.storage->makeDir(path.c_str())){
+        printf("[EffectsManager] failed to create directory for effect. but moving on...\n");
+        //return false;
+    }
 
-    auto pathCode = path + "code";
-    if(!app.storage->store(pathCode.c_str(), id)) {
+    auto pathCode = path + "/code";
+    if(!app.storage->store(pathCode.c_str(), code)) {
         printf("[EffectsManager] failed to store code\n");
         return false;
     }
 
-    // auto pathName = path + "/name";
-    // if(!app.storage->store(pathName.c_str(), name)) {
-    //     printf("[EffectsManager] failed to store name\n");
-    //     return false;
-    // }
+    auto pathName = path + "/name";
+    if(!app.storage->store(pathName.c_str(), name)) {
+        printf("[EffectsManager] failed to store name\n");
+        return false;
+    }
 
     app.storage->store("cfg/ef_last_reg", id);
     lastRegisteredId = id;
@@ -103,7 +101,7 @@ bool EffectsManager::addNewEffect(const std::string &name, const std::string &co
 
 std::string EffectsManager::fetchEffectCode(uint32_t id)
 {
-    auto path = std::string("eff/e") + std::to_string(id) + "/code";
+    auto path = std::string("eff/e_") + std::to_string(id) + "/code";
 
     return app.storage->read_string(path.c_str());
 }
