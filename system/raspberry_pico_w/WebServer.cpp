@@ -225,6 +225,9 @@ std::string escapeHTML(const std::string& data) {
         }
     }
 
+    //printf("escapeHTML before: %s\n", data.c_str());
+    //printf("escapeHTML after : %s\n", output.c_str());
+
     return output;
 }
 
@@ -254,8 +257,11 @@ ParseProgress parseParameters(Request& request, char* data, uint32_t data_size, 
     for(value_pos; value_pos <= data_size && data2[value_pos] != '&' && data2[value_pos] != ' ' && data2[value_pos] != 0; ++value_pos){}
 
     // printf("value_pos %d\n", value_pos);
-    // printf("data2[value_pos] %c\n", data2[value_pos-1]);
-    // printf("data2[value_pos] %d\n", data2[value_pos-1]);
+    // printf("data_size %d\n", data_size);
+    // printf("data2[value_pos-1] %c\n", data2[value_pos-1]);
+    // printf("data2[value_pos-1] %d\n", data2[value_pos-1]);
+    // printf("data2[value_pos] %c\n", data2[value_pos]);
+    // printf("data2[value_pos] %d\n", data2[value_pos]);
     // printf("end %d\n", separator_pos + 1 + value_pos);
 
     if(type == Parameter::Type::GET && value_pos == data_size)
@@ -379,8 +385,8 @@ static ParseProgress parsePOST(char* data, uint32_t size, Request& request) {
         }
     }
 
-    // printf("Content-Length: %d\n", contentLength);
-    // printf("Size: %d\n", size);
+    printf("Content-Length: %d\n", contentLength);
+    printf("Size: %d\n", size);
 
     if(contentLength + 2 > size) {
         return {ParseResult::IN_PROGRESS, 0};
@@ -427,18 +433,18 @@ static err_t http_recv(void *arg, tcp_pcb *pcb, pbuf *p, err_t err)
     }
 
     auto len = p->tot_len;
-    pbuf_copy_partial(p, hs->payload + hs->payloadSize, 8*1024, 0);
+    pbuf_copy_partial(p, hs->payload + hs->payloadSize, 8*1024 - hs->payloadSize, 0);
     tcp_recved(pcb, p->tot_len);
     pbuf_free(p);
     hs->payloadSize += len;
-    hs->payload[len] = 0;
+    hs->payload[hs->payloadSize + len] = 0;
     //printf("PAYLOAD[%d]\n%s\n------------\n",len, hs->payload);
 
     Request request;
     auto result = parseHeaders(hs->payload, request);
     hs->parsed = result.end_at;
-    // printf("hs->parsed: %d\n", hs->parsed);
-    // printf("hs->payloadSize: %d\n", hs->payloadSize);
+    //printf("hs->parsed: %d\n", hs->parsed);
+    //printf("hs->payloadSize: %d\n", hs->payloadSize);
     printRequestLight(request);
 
     if(request.method == MethodType::POST) {
@@ -448,6 +454,7 @@ static err_t http_recv(void *arg, tcp_pcb *pcb, pbuf *p, err_t err)
     //printf("result.result: %s\n", to_char(result.result));
 
     if(result.result == ParseResult::DONE) {
+        //debug_print(request);
         auto response = hs->webserver->prepareResponse(pcb, request);
 
         sendHeaders(pcb, response);

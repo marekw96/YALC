@@ -19,7 +19,7 @@ extern "C" {
 #include "Time.hpp"
 #include <string>
 
-static char heap[8 * 1024];
+static char heap[16 * 1024];
 
 template <typename Display>
 class AnimationEngine {
@@ -40,6 +40,7 @@ class AnimationEngine {
         }
 
         void init(){
+            printf("[AnimationEngine]heap size %d\n", sizeof(heap));
             if(initDone) {
                 return;
             }
