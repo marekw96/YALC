@@ -22,22 +22,19 @@ Application application;
 
 void core_with_non_rt_stuff() {
     Time time;
-    InternetManager internet;
+    InternetManager internet(application);
     WebServer webServer;
 
     application.internetManager = &internet;
 
     internet.init();
 
-    if(internet.connect_to("SSID", "PASSWORD")){
-        printf("Unable to connect\n");
-
+    if(internet.getPrefferedNetworkType() == NetworkType::STANDALONE) {
+        internet.connectToSTA();
     }
-    else {
-        printf("Connected to wifi\n");
+    else{
+        internet.enableAPMode();
     }
-
-    internet.start();
     webServer.init(80);
 
     ConnectionSettingsPage connectionSettingsPage(application);
@@ -87,6 +84,8 @@ void delayStartup() {
 
 int main() {
     stdio_init_all();
+
+    //delayStartup();
 
     Storage storage;
     application.storage;
