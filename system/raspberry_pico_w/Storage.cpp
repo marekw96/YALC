@@ -1,9 +1,5 @@
 #include "Storage.hpp"
 
-#include "pico/multicore.h"
-
-constexpr auto ONE_SEC_IN_US = 1'000'000;
-
 void dump_stats(const char* fnc) {
     struct pico_fsstat_t stat;
     pico_fsstat(&stat);
@@ -27,9 +23,6 @@ bool Storage::store(const char *path, uint32_t value)
     if(file < 0) {
         return false;
     }
-    if(!multicore_lockout_start_timeout_us(ONE_SEC_IN_US)) {
-        printf("Failed to enter to lockout state!\n");
-    }
 
     auto bytesWritten = pico_write(file, &value, sizeof(value));
     if(bytesWritten < 0) {
@@ -39,7 +32,6 @@ bool Storage::store(const char *path, uint32_t value)
     if(result < 0 ) {
         printf("Storage::store(uint32_t)[%s] flush failed: %s\n", path, pico_errmsg(result));
     }
-    multicore_lockout_end_blocking();
     result = pico_close(file);
     if(result < 0 ) {
         printf("Storage::store(uint32_t)[%s] close failed: %s\n", path, pico_errmsg(result));
@@ -60,9 +52,6 @@ bool Storage::store(const char *path, const std::string &value)
         return false;
     }
 
-    if(!multicore_lockout_start_timeout_us(ONE_SEC_IN_US)) {
-        printf("Failed to enter to lockout state!\n");
-    }
     auto bytesWritten = pico_write(file, value.c_str(), value.size());
     if(bytesWritten < 0) {
         printf("Storage::store(string)[%s] write failed: %s\n", path, pico_errmsg(bytesWritten));
@@ -71,7 +60,7 @@ bool Storage::store(const char *path, const std::string &value)
     if(result < 0 ) {
         printf("Storage::store(string)[%s] flush failed: %s\n", path, pico_errmsg(result));
     }
-    multicore_lockout_end_blocking();
+
     result = pico_close(file);
     if(result < 0 ) {
         printf("Storage::store(string)[%s] close failed: %s\n", path, pico_errmsg(result));
@@ -107,19 +96,13 @@ std::string Storage::read_string(const char *path)
     return value;
 }
 
-bool Storage::makeDir(const char *path, bool block)
+bool Storage::makeDir(const char *path)
 {
     dump_stats("store::makeDir");
-    printf("Store::makeDir %s %s\n", path, block?"Blocking":"Non-Blocking");
+    printf("Store::makeDir %s\n", path);
 
-    if(block){
-        if(!multicore_lockout_start_timeout_us(ONE_SEC_IN_US)) {
-            printf("Failed to enter to lockout state!\n");
-        }
-    }
+
     auto result = pico_mkdir(path);
-    if(block)
-        multicore_lockout_end_blocking();
 
     if(result < 0) {
         printf("Storage::makeDir[%s] mkdir failed: %s\n", path, pico_errmsg(result));

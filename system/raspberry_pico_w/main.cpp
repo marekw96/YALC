@@ -10,7 +10,6 @@
 #include "WebServer.hpp"
 #include "lwip/init.h"
 #include "pico/cyw43_arch.h"
-#include "pico/multicore.h"
 #include "Application.hpp"
 #include "EffectsManager.hpp"
 
@@ -21,53 +20,7 @@
 
 Application application;
 
-
-enum CoreCommunicationStatus {
-    BASIC_INIT_DONE = 1,
-    RELOAD_ANIMATIONS = 2
-};
-
-void core_with_python_animations(){
-    printf("[core_with_python_animations] starting\n");
-    multicore_lockout_victim_init();
-    while(1){
-        sleep_ms(100);
-        tight_loop_contents();
-    }
-    Time time;
-
-    LedString_ws2812 ledString(1, 100);
-    AnimationEngine vm(ledString);
-
-    while(true){
-        printf("Animation loop started\n");
-
-
-        ledString.init();
-        vm.init();
-        //vm.createAnimation(application.effectsManager->getEffectCode(application.effectsManager->getSelectedEffectId()));
-        vm.createAnimation(FallingStar_py);
-
-        auto current = time.current();
-        while(true) {
-            ledString.update();
-            auto diff = time.current() - current;
-            vm.periodic(diff);
-
-            current = time.current();
-
-            if(application.effectsManager->hasEffectChanged()) {
-                application.effectsManager->restartedEffects();
-                break;
-            }
-            sleep_ms(50);
-        }
-    }
-
-}
-
 void core_with_non_rt_stuff() {
-    printf("[core_with_non_rt_stuff] starting\n");
     Time time;
     InternetManager internet;
     WebServer webServer;
@@ -97,8 +50,9 @@ void core_with_non_rt_stuff() {
 
     ledString.init();
     vm.init();
-    //vm.createAnimation(application.effectsManager->getEffectCode(application.effectsManager->getSelectedEffectId()));
-    vm.createAnimation(FallingStar_py);
+    auto code = application.effectsManager->getEffectCode(application.effectsManager->getSelectedEffectId());
+    vm.createAnimation(code);
+    application.effectsManager->restartedEffects();
 
     auto current = time.current();
     while(true) {
@@ -110,7 +64,7 @@ void core_with_non_rt_stuff() {
         vm.periodic(diff);
         if(application.effectsManager->hasEffectChanged()) {
             printf("MAIN changing effect\n");
-            auto code = application.effectsManager->getEffectCode(application.effectsManager->getSelectedEffectId());
+            code = application.effectsManager->getEffectCode(application.effectsManager->getSelectedEffectId());
             vm.deinit();
             vm.init();
             vm.createAnimation(code);
@@ -122,13 +76,17 @@ void core_with_non_rt_stuff() {
     internet.deinit();
 }
 
-int main() {
-    stdio_init_all();
+void delayStartup() {
 
     for(int i = 5; i >= 0; --i) {
         sleep_ms(1000);
         printf("wait %d...\n", i);
     }
+
+}
+
+int main() {
+    stdio_init_all();
 
     Storage storage;
     application.storage;
@@ -140,25 +98,11 @@ int main() {
         printf("Failed to init storage \n");
     }
     else {
-        storage.makeDir("cfg", false);
+        storage.makeDir("cfg");
     }
 
     if(!application.effectsManager->init()) {
         printf("Failed to init effectsManager but keep going... \n");
-    }
-    multicore_launch_core1(core_with_python_animations);
-
-    printf("Wait until core 1 is set to lockout victim\n");
-    int i = 0;
-    while(true){
-        sleep_ms(1000);
-        if(!multicore_lockout_victim_is_initialized(1)) {
-            printf("[%d]Still nothing\n", i++);
-        }
-        else{
-            printf("Ready!\n");
-            break;
-        }
     }
 
     application.effectsManager->selectEffect(storage.read_uint32_t("cfg/eff_selected"));

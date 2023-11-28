@@ -16,7 +16,7 @@ public:
     bool store(const char* path, const std::string& value);
     uint32_t read_uint32_t(const char* path);
     std::string read_string(const char* path);
-    bool makeDir(const char* path, bool block = true);
+    bool makeDir(const char* path);
     int iterateOverDirectory(const char* path, DirectoryIteratorFunc handler, void* obj);
     bool removeWholeDirectory(const char* path);
     bool remove(const char* path);
