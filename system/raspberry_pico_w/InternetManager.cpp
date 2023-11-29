@@ -50,7 +50,7 @@ void InternetManager::init()
     auto apSSIDread = app.storage->read_string("cfg/ap_ssid");
     auto apPASSWORDread = app.storage->read_string("cfg/ap_passwd");
 
-    if(!apSSID.empty()){
+    if(apSSID.size() != 0){
         apSSID = apSSIDread;
         apPASSWORD = apPASSWORDread;
     }

@@ -98,6 +98,9 @@ int main() {
     }
     else {
         storage.makeDir("cfg");
+        app.storage->store("cfg/wifi_mode", 0u);
+        app.storage->store("cfg/ap_ssid", std::string("YALC"));
+        app.storage->store("cfg/ap_passwd", std::string("12345678"));
     }
 
     if(!application.effectsManager->init()) {
