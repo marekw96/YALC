@@ -30,10 +30,12 @@ int main(int argc, char* argv[]) {
 
     vm->init();
     vm->createAnimation(readWholeFile(argv[1]));
+    auto moduleName = vm->getModuleName();
+    std::cout << "Module name is: " << moduleName << std::endl;
 
     auto current = time.current();
 
-    while(sfmlDisplay.isOk()) {
+    if(sfmlDisplay.isOk()) {
         sfmlDisplay.periodic();
         auto diff = time.current() - current;
         vm->periodic(diff);

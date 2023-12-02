@@ -4,8 +4,10 @@ extern "C" {
     #include "port/micropython_embed.h"
 
     void* display_obj;
+    void* python_engine_obj;
     void (*func_to_set_pixel)(int id, int r, int g, int b);
     int (*func_to_get_numer_of_pixels)(void);
+    void (*func_get_module_name)(const char* str);
 
     void set_pixel_id_r_g_b(int id , int r , int g, int b){
         func_to_set_pixel(id, r, g, b);
@@ -13,6 +15,9 @@ extern "C" {
 
     int get_number_of_pixels() {
         return func_to_get_numer_of_pixels();
+    }
+    void set_module_name(const char* str) {
+        func_get_module_name(str);
     }
 }
 #include "../pythonAnimations/YALCAnimation.py.hpp"
@@ -28,6 +33,7 @@ class AnimationEngine {
             : display(display)
         {
             display_obj = &display;
+            python_engine_obj = this;
         }
 
         ~AnimationEngine() {
@@ -50,6 +56,7 @@ class AnimationEngine {
 
             bindGetNumberOfPixels();
             bindSetPixelColorRGB();
+            bindGetModuleName();
             execYALCAnimationBaseClass();
 
             initDone = true;
@@ -64,12 +71,28 @@ class AnimationEngine {
             this->exec("currentAnimation = create()");
         }
 
+        const std::string getModuleName() {
+            this->exec("leds.set_module_name(currentAnimation.name())");
+            return moduleName;
+        }
+
+        void _setModuleName(const char* name) {
+            moduleName = name;
+        }
+
     private:
 
         void bindGetNumberOfPixels() {
             func_to_get_numer_of_pixels = []() -> int {
                 Display* display = reinterpret_cast<Display*>(display_obj);
                 return static_cast<int>(display->ledsCount());
+            };
+        }
+
+        void bindGetModuleName() {
+            func_get_module_name = [](const char* name) -> void {
+                AnimationEngine<Display>* ae = reinterpret_cast<AnimationEngine<Display>*>(python_engine_obj);
+                ae->_setModuleName(name);
             };
         }
 
@@ -98,6 +121,8 @@ class AnimationEngine {
             mp_embed_exec_str(code.c_str());
         }
 
+
         Display& display;
         bool initDone = false;
+        std::string moduleName;
 };
