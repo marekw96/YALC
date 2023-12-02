@@ -18,6 +18,12 @@ list(APPEND "LINUX_SRC" "system/linux/Time.cpp")
 list(APPEND "LINUX_SRC" "system/linux/Socket.cpp")
 list(APPEND "LINUX_SRC" "system/linux/SFMLDisplay.cpp")
 
+add_custom_command(
+    OUTPUT ../pythonAnimations/YALCAnimation.py.hpp
+    DEPENDS ../pythonAnimations/YALCAnimation.py
+    COMMAND pushd ../pythonAnimations/; python3 convertToHpp.py YALCAnimation.py YALCAnimation.py.hpp; popd
+)
+
 # add_executable(LinuxMain system/linux/main.cpp ${YALC_PROTOCOL_SRC} ${LINUX_SRC})
 # target_link_libraries(LinuxMain PRIVATE sfml-graphics)
 

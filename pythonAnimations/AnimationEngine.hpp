@@ -8,6 +8,7 @@ extern "C" {
     void (*func_to_set_pixel)(int id, int r, int g, int b);
     int (*func_to_get_numer_of_pixels)(void);
     void (*func_get_module_name)(const char* str);
+    void (*func_register_color_parameter)(const char* name, const char* def);
 
     void set_pixel_id_r_g_b(int id , int r , int g, int b){
         func_to_set_pixel(id, r, g, b);
@@ -19,12 +20,27 @@ extern "C" {
     void set_module_name(const char* str) {
         func_get_module_name(str);
     }
+    void register_color_parameter(const char* name, const char* defaultValue) {
+        func_register_color_parameter(name, defaultValue);
+    }
 }
 #include "../pythonAnimations/YALCAnimation.py.hpp"
 #include "Time.hpp"
 #include <string>
+#include <vector>
 
 static char heap[16 * 1024];
+
+enum class ParameterType {
+    Color = 'c'
+};
+
+struct ParameterDescription {
+    ParameterType type;
+    std::string name;
+    std::string defaultValue;
+    std::string value;
+};
 
 template <typename Display>
 class AnimationEngine {
@@ -57,6 +73,7 @@ class AnimationEngine {
             bindGetNumberOfPixels();
             bindSetPixelColorRGB();
             bindGetModuleName();
+            bindRegisterColorParameter();
             execYALCAnimationBaseClass();
 
             initDone = true;
@@ -76,8 +93,29 @@ class AnimationEngine {
             return moduleName;
         }
 
+        const std::vector<ParameterDescription> getParameters() {
+            this->exec("currentAnimation.registerParameters()");
+            return parameters;
+        }
+
+        void setColorParameterValue(const std::string& name, const std::string& value) {
+            std::string colorPython = std::string("[0x") + value.substr(0, 2) + ", 0x" + value.substr(2,2) + ", 0x" + value.substr(4,2) + "]";
+            std::string cmd = std::string("currentAnimation.setParameter('") + name + "', " + colorPython + ")";
+            std::cout << cmd << std::endl;
+            this->exec(cmd);
+        }
+
         void _setModuleName(const char* name) {
             moduleName = name;
+        }
+
+        void _addColorParameter(const char* name, const char* defaultValue) {
+            ParameterDescription param;
+            param.type = ParameterType::Color;
+            param.name = name;
+            param.defaultValue = defaultValue;
+            param.value = defaultValue;
+            parameters.push_back(param);
         }
 
     private:
@@ -93,6 +131,13 @@ class AnimationEngine {
             func_get_module_name = [](const char* name) -> void {
                 AnimationEngine<Display>* ae = reinterpret_cast<AnimationEngine<Display>*>(python_engine_obj);
                 ae->_setModuleName(name);
+            };
+        }
+
+        void bindRegisterColorParameter() {
+            func_register_color_parameter = [](const char* name, const char* defaultValue) -> void {
+                AnimationEngine<Display>* ae = reinterpret_cast<AnimationEngine<Display>*>(python_engine_obj);
+                ae->_addColorParameter(name, defaultValue);
             };
         }
 
@@ -125,4 +170,5 @@ class AnimationEngine {
         Display& display;
         bool initDone = false;
         std::string moduleName;
+        std::vector<ParameterDescription> parameters;
 };

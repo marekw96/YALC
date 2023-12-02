@@ -32,17 +32,24 @@ int main(int argc, char* argv[]) {
     vm->createAnimation(readWholeFile(argv[1]));
     auto moduleName = vm->getModuleName();
     std::cout << "Module name is: " << moduleName << std::endl;
+    auto moduleParameters = vm->getParameters();
+    std::cout << "Module parameters[" << moduleParameters.size() << "]:" << std::endl;
+    for(const auto& parameter: moduleParameters) {
+        std::cout << "Paramter name: " << parameter.name << ", defaultValue: " << parameter.defaultValue << std::endl;
+    }
+
+    //vm->setColorParameterValue("fillColor", "aeaeae");
 
     auto current = time.current();
 
-    if(sfmlDisplay.isOk()) {
+    while(sfmlDisplay.isOk()) {
         sfmlDisplay.periodic();
         auto diff = time.current() - current;
         vm->periodic(diff);
         current = time.current();
     }
 
-
     delete vm;
+
     return 0;
 }
