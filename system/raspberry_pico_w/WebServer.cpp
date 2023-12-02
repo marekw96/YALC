@@ -63,7 +63,7 @@ ParseProgress parseHttpVersion(Request& request, char* data, uint32_t data_size)
 }
 
 ParseProgress parseUri(Request& request, char* data, uint32_t data_size) {
-    auto max_size = data_size < sizeof(request.uri) ? data_size : sizeof(request.uri);
+    auto max_size = data_size < 256 ? data_size : 256;
 
     uint32_t i = 0;
     for(i; i < max_size && data[i] != ' ' && data[i] != '?'; ++i) { }
@@ -606,4 +606,15 @@ Response &Response::write(const std::string &data)
     payload += data;
 
     return *this;
+}
+
+OptionalRef<const Parameter> Request::getParameter(const std::string &name) const
+{
+    for(auto& param: parameters){
+        if(param.name == name){
+            return {param};
+        }
+    }
+
+    return {};
 }

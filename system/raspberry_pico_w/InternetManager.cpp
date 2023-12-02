@@ -7,6 +7,7 @@
 #include "lwip/dhcp.h"
 
 
+
 static void netif_sta_status_callback(netif *netif)
 {
     printf("netif_sta_status_callback %s\n", ip4addr_ntoa(netif_ip4_addr(netif)));
@@ -34,10 +35,12 @@ void InternetManager::init()
 
 
     auto type = app.storage->read_uint32_t("cfg/wifi_mode");
-    if(type == 1) {
+    if(type != 0) {
         prefferedType = NetworkType::STANDALONE;
+        requestedNetworkType = prefferedType;
     }
 
+    printf("[InternetManager]type readout: %d\n", type);
     printf("[InternetManager]preffered network type: %s\n", to_char(prefferedType));
 
     storedSSID = app.storage->read_string("cfg/sta_ssid");
@@ -46,16 +49,15 @@ void InternetManager::init()
 
     printf("[InternetManager]stored ssid: %s\n", storedSSID.c_str());
     printf("[InternetManager]stored password length: %d\n", storedPASSWORD.size());
+    printf("[InternetManager]stored auth: %s\n", to_char(storedAUTH));
 
-    auto apSSIDread = app.storage->read_string("cfg/ap_ssid");
-    auto apPASSWORDread = app.storage->read_string("cfg/ap_passwd");
+    apSSID = app.storage->read_string("cfg/ap_ssid");
+    apPASSWORD = app.storage->read_string("cfg/ap_passwd");
+    apAUTH = static_cast<NetworkAuth>(app.storage->read_uint32_t("cfg/ap_auth"));
 
-    if(apSSID.size() != 0){
-        apSSID = apSSIDread;
-        apPASSWORD = apPASSWORDread;
-    }
     printf("[InternetManager]AP ssid: %s\n", apSSID.c_str());
     printf("[InternetManager]AP pass: %s\n", apPASSWORD.c_str());
+    printf("[InternetManager]AP auth: %s\n", to_char(apAUTH));
 
 
     printf("[InternetManager]init -> done\n");
@@ -68,10 +70,20 @@ void InternetManager::changedStatusToConnected() {
     cyw43_cb_tcpip_set_link_up(&cyw43_state, CYW43_ITF_STA);
 
     cyw43_arch_lwip_begin();
-    if(dhcp_start(netif_default) != ERR_OK) {
-        printf("Failed to dhcp_start\n");
-    } else {
-        printf("Started dhcp ?\n");
+    if(prefferedType == NetworkType::STANDALONE) {
+        if(dhcp_start(netif_default) != ERR_OK) {
+            printf("[InternetManager]Failed to dhcp_start\n");
+        } else {
+            printf("[InternetManager]Started dhcp ?\n");
+        }
+    }
+    else {
+        // ip_addr_t ap_address{.addr = LWIP_MAKEU32(192, 168, 0, 1)};
+        // ip_addr_t netmask{.addr = LWIP_MAKEU32(255, 255, 255, 0)};
+        // dhcp_server_init(&dhcpServer, &ap_address, &netmask);
+        // printf("[InternetManager]starting dhcp server\n");
+
+        printf("[InternetManager]---->NO DHCP server. Set manually ip addres, controller is 192.168.4.1\n");
     }
 
     cyw43_arch_lwip_end();
@@ -93,6 +105,11 @@ void InternetManager::setPrefferedNetworkType(NetworkType type)
     prefferedType = type;
 }
 
+void InternetManager::changeNetworkType(NetworkType type)
+{
+    requestedNetworkType = type;
+}
+
 ConnectionStatus InternetManager::getStatus()
 {
     return connectionStatus;
@@ -103,6 +120,30 @@ NetworkType InternetManager::getPrefferedNetworkType()
     return prefferedType;
 }
 
+const std::string& InternetManager::getSTAName(){
+    return storedSSID;
+}
+
+NetworkAuth InternetManager::getAuth()
+{
+    return storedAUTH;
+}
+
+const std::string& InternetManager::getAPName()
+{
+    return apSSID;
+}
+
+const std::string& InternetManager::getAPPassword()
+{
+    return apPASSWORD;
+}
+
+NetworkAuth InternetManager::getAPPAuth()
+{
+    return apAUTH;
+}
+
 void InternetManager::storeSTANetowrkData(const std::string& ssid, const std::string& passwd, NetworkAuth auth)
 {
     storedAUTH = auth;
@@ -111,20 +152,41 @@ void InternetManager::storeSTANetowrkData(const std::string& ssid, const std::st
 
     app.storage->store("cfg/sta_ssid", ssid);
     app.storage->store("cfg/sta_passwd", passwd);
-    app.storage->store("cfg/sta_auth", static_cast<uint32_t>(storedAUTH));
+    app.storage->store("cfg/sta_auth", static_cast<uint32_t>(auth));
+}
+
+void InternetManager::storeAPData(const std::string &ssid, const std::string &passwd, NetworkAuth auth)
+{
+    apAUTH = auth;
+    apSSID = ssid;
+    apPASSWORD = passwd;
+
+    app.storage->store("cfg/ap_ssid", ssid);
+    app.storage->store("cfg/ap_passwd", passwd);
+    app.storage->store("cfg/ap_auth", static_cast<uint32_t>(auth));
 }
 
 bool InternetManager::connectToSTA()
 {
     printf("[InternetManager]connectToSTA\n");
+    connectionStatus = ConnectionStatus::NOT_CONNECTED;
+    app.storage->store("cfg/wifi_mode", 1u);
+    cyw43_arch_disable_ap_mode();
     cyw43_arch_enable_sta_mode();
+    whenStartedConnectingToSTA = Time{}.current();
     return cyw43_arch_wifi_connect_async(storedSSID.c_str(), storedPASSWORD.c_str(), static_cast<uint32_t>(storedAUTH)) == 0;
 }
 
 void InternetManager::enableAPMode()
 {
     printf("[InternetManager]Enabling AP mode\n");
+    connectionStatus = ConnectionStatus::NOT_CONNECTED;
+    app.storage->store("cfg/wifi_mode", 0u);
+    cyw43_arch_disable_sta_mode();
     cyw43_arch_enable_ap_mode(apSSID.c_str(), apPASSWORD.c_str(), CYW43_AUTH_WPA2_MIXED_PSK);
+
+    //it's already connected to AP
+    changedStatusToConnected();
 }
 
 void InternetManager::deinit()
@@ -141,5 +203,24 @@ void InternetManager::periodic()
     auto status = cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA);
     if(status == 3 && connectionStatus != ConnectionStatus::CONNECTED){
         changedStatusToConnected();
+    }
+
+    if(connectionStatus != ConnectionStatus::CONNECTED){
+        auto now = Time{}.current();
+        auto diff = now - whenStartedConnectingToSTA;
+        if(diff.asSeconds() > 5) {
+            printf("[InternetManager]Still not connected after 5 secs. Starting AP\n");
+            changeNetworkType(NetworkType::ACCESS_POINT);
+        }
+    }
+
+    if(requestedNetworkType != prefferedType) {
+        setPrefferedNetworkType(requestedNetworkType);
+        if(prefferedType == NetworkType::ACCESS_POINT) {
+            enableAPMode();
+        }
+        else if(prefferedType == NetworkType::STANDALONE){
+            connectToSTA();
+        }
     }
 }

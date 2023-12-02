@@ -85,7 +85,7 @@ void delayStartup() {
 int main() {
     stdio_init_all();
 
-    //delayStartup();
+    delayStartup();
 
     Storage storage;
     application.storage;
@@ -97,10 +97,13 @@ int main() {
         printf("Failed to init storage \n");
     }
     else {
-        storage.makeDir("cfg");
-        app.storage->store("cfg/wifi_mode", 0u);
-        app.storage->store("cfg/ap_ssid", std::string("YALC"));
-        app.storage->store("cfg/ap_passwd", std::string("12345678"));
+        if(storage.read_uint32_t("cfg/init") != 1) {
+            storage.makeDir("cfg");
+            storage.store("cfg/wifi_mode", 0u);
+            storage.store("cfg/ap_ssid", std::string("YALC"));
+            storage.store("cfg/ap_passwd", std::string("12345678"));
+            storage.store("cfg/init", 1u);
+        }
     }
 
     if(!application.effectsManager->init()) {

@@ -89,7 +89,7 @@ std::string Storage::read_string(const char *path)
         return "";
     }
     auto size = pico_size(file);
-    std::string value(size+1, 0);
+    std::string value(size, 0);
     pico_read(file, &value[0], size);
     pico_close(file);
 

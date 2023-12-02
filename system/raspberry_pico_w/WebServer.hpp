@@ -147,12 +147,30 @@ enum class ResponseCode {
     NETWORK_AUTHENTICATION_REQUIRED = 511
 };
 
+template <typename T>
+class OptionalRef {
+public:
+    OptionalRef() : obj(nullptr) {}
+    OptionalRef(T& obj) : obj(&obj) {}
+
+    bool isOk() const { return obj != nullptr;}
+    operator bool() const { return isOk();}
+    bool operator!() const { return !isOk();}
+    T& operator *() { return *obj;}
+    T* operator ->() { return obj;}
+
+private:
+    T* obj;
+};
+
 struct Request {
     Version version;
     MethodType method;
     std::string uri;
     std::vector<Header> headers;
     std::vector<Parameter> parameters;
+
+    OptionalRef<const Parameter> getParameter(const std::string& name) const;
 };
 
 struct Response {
