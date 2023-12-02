@@ -25,6 +25,7 @@ list(APPEND "RPI_PICO_W_SRC" "system/raspberry_pico_w/webpages/ConnectionSetting
 list(APPEND "RPI_PICO_W_SRC" "system/raspberry_pico_w/webpages/EffectsPage.cpp")
 list(APPEND "RPI_PICO_W_SRC" "system/raspberry_pico_w/EffectsManager.cpp")
 list(APPEND "RPI_PICO_W_SRC" "system/raspberry_pico_w/Storage.cpp")
+list(APPEND "RPI_PICO_W_SRC" "pythonAnimations/AnimationEngine.cpp")
 
 
 add_executable(RpiPicoW_YALC ${YALC_PROTOCOL_SRC}  ${RPI_PICO_W_SRC})

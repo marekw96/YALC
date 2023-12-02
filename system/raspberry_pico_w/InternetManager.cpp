@@ -210,7 +210,8 @@ void InternetManager::periodic()
         auto diff = now - whenStartedConnectingToSTA;
         if(diff.asSeconds() > 5) {
             printf("[InternetManager]Still not connected after 5 secs. Starting AP\n");
-            changeNetworkType(NetworkType::ACCESS_POINT);
+            printf("[InternetManager]diff %d\n", diff.asMiliseconds());
+            enableAPMode();
         }
     }
 

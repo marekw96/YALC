@@ -20,6 +20,9 @@ Response EffectsPage::handle(const Request &request)
     if(request.uri.find("/effects/remove") == 0) {
         handleRemovingEffect(request, response);
     }
+    if(request.uri.find("/effects/changeParameters") == 0) {
+        handlechangeParameters(request, response);
+    }
 
     response.write("Effects list:");
     response.write("<ul>");
@@ -28,6 +31,19 @@ Response EffectsPage::handle(const Request &request)
         response.write(std::string("<a href=\"/effects/select/") + std::to_string(effect.id) + "\">" + effect.name + "</a>");
         if(effect.id != app.effectsManager->getSelectedEffectId())
             response.write(std::string("  <a href=\"/effects/remove/") + std::to_string(effect.id) + "\">X</a>");
+
+        if(effect.parameters.size() > 0) {
+            response.write("<br /><form method=\"POST\" action=\"/effects/changeParameters/")
+                    .write(std::to_string(effect.id)).write("\">");
+
+            for(const auto& param: effect.parameters){
+                response.write(param.name).write(": ")
+                       .write("<input type=\"color\" name=\"").write(param.name).write("\" value=\"#")
+                       .write(param.value).write("\" /><br />");
+            }
+
+            response.write("<button>Store</button></form>");
+        }
         response.write("</li>");
     }
     response.write("</ul>");
@@ -116,5 +132,22 @@ void EffectsPage::handleRemovingEffect(const Request &request, Response &respons
     }
     else {
         response.write("Failed during effect removing<br />");
+    }
+}
+
+void EffectsPage::handlechangeParameters(const Request &request, Response &response)
+{
+    auto part = request.uri.rfind("/");
+    if(part == request.uri.length()-1) {
+        response.write("Unable to set effect parameter<br />");
+        return;
+    }
+
+    auto id_str = request.uri.substr(part+1);
+    uint32_t id = std::atoi(id_str.c_str());
+
+    for(const auto& param : request.parameters) {
+        printf("[EffectsPage]setting parameter %s for id %d with value %s\n", param.name.c_str(), id, param.value.c_str());
+        app.effectsManager->setParameterForEffect(id, param.name, param.value.substr(1));
     }
 }

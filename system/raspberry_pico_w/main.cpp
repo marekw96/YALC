@@ -44,11 +44,13 @@ void core_with_non_rt_stuff() {
 
     LedString_ws2812 ledString(1, 100);
     AnimationEngine vm(ledString);
+    application.animationEngine = &vm;
 
     ledString.init();
-    vm.init();
+
     auto code = application.effectsManager->getEffectCode(application.effectsManager->getSelectedEffectId());
-    vm.createAnimation(code);
+    vm.changeAnimation(code);
+
     application.effectsManager->restartedEffects();
 
     auto current = time.current();
@@ -62,9 +64,7 @@ void core_with_non_rt_stuff() {
         if(application.effectsManager->hasEffectChanged()) {
             printf("MAIN changing effect\n");
             code = application.effectsManager->getEffectCode(application.effectsManager->getSelectedEffectId());
-            vm.deinit();
-            vm.init();
-            vm.createAnimation(code);
+            vm.changeAnimation(code);
             application.effectsManager->restartedEffects();
             printf("Main effect restarted\n");
         }

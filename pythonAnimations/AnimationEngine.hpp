@@ -3,44 +3,25 @@
 extern "C" {
     #include "port/micropython_embed.h"
 
-    void* display_obj;
-    void* python_engine_obj;
-    void (*func_to_set_pixel)(int id, int r, int g, int b);
-    int (*func_to_get_numer_of_pixels)(void);
-    void (*func_get_module_name)(const char* str);
-    void (*func_register_color_parameter)(const char* name, const char* def);
+    extern void* display_obj;
+    extern void* python_engine_obj;
+    extern void (*func_to_set_pixel)(int id, int r, int g, int b);
+    extern int (*func_to_get_numer_of_pixels)(void);
+    extern void (*func_get_module_name)(const char* str);
+    extern void (*func_register_color_parameter)(const char* name, const char* def);
 
-    void set_pixel_id_r_g_b(int id , int r , int g, int b){
-        func_to_set_pixel(id, r, g, b);
-    }
-
-    int get_number_of_pixels() {
-        return func_to_get_numer_of_pixels();
-    }
-    void set_module_name(const char* str) {
-        func_get_module_name(str);
-    }
-    void register_color_parameter(const char* name, const char* defaultValue) {
-        func_register_color_parameter(name, defaultValue);
-    }
+    void set_pixel_id_r_g_b(int id , int r , int g, int b);
+    int get_number_of_pixels();
+    void set_module_name(const char* str);
+    void register_color_parameter(const char* name, const char* defaultValue);
 }
 #include "../pythonAnimations/YALCAnimation.py.hpp"
 #include "Time.hpp"
 #include <string>
 #include <vector>
+#include "../pythonAnimations/Parameter.hpp"
 
 static char heap[16 * 1024];
-
-enum class ParameterType {
-    Color = 'c'
-};
-
-struct ParameterDescription {
-    ParameterType type;
-    std::string name;
-    std::string defaultValue;
-    std::string value;
-};
 
 template <typename Display>
 class AnimationEngine {
@@ -57,8 +38,10 @@ class AnimationEngine {
         }
 
         void deinit() {
-            mp_embed_deinit();
-            initDone = false;
+            if(initDone) {
+                mp_embed_deinit();
+                initDone = false;
+            }
         }
 
         void init(){
@@ -77,6 +60,12 @@ class AnimationEngine {
             execYALCAnimationBaseClass();
 
             initDone = true;
+        }
+
+        void changeAnimation(const std::string& code) {
+            deinit();
+            init();
+            createAnimation(code);
         }
 
         void periodic(Duration diff) {
@@ -101,7 +90,6 @@ class AnimationEngine {
         void setColorParameterValue(const std::string& name, const std::string& value) {
             std::string colorPython = std::string("[0x") + value.substr(0, 2) + ", 0x" + value.substr(2,2) + ", 0x" + value.substr(4,2) + "]";
             std::string cmd = std::string("currentAnimation.setParameter('") + name + "', " + colorPython + ")";
-            std::cout << cmd << std::endl;
             this->exec(cmd);
         }
 

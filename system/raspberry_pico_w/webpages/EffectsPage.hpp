@@ -14,4 +14,5 @@ private:
     void handleSelectingNewEffect(const Request& request, Response& response);
     void handleAddingNewEffect(const Request& request, Response& response);
     void handleRemovingEffect(const Request& request, Response& response);
+    void handlechangeParameters(const Request& request, Response& response);
 };
