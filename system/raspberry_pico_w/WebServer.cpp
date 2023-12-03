@@ -164,6 +164,7 @@ std::string escapeHTML(const std::string& data) {
         {"2C", ','},
         {"2D", '-'},
         {"2E", '.'},
+        {"2F", '/'},
         {"3A", ':'},
         {"3B", ';'},
         {"3C", '<'},
@@ -454,7 +455,7 @@ static err_t http_recv(void *arg, tcp_pcb *pcb, pbuf *p, err_t err)
     //printf("result.result: %s\n", to_char(result.result));
 
     if(result.result == ParseResult::DONE) {
-        //debug_print(request);
+        debug_print(request);
         auto response = hs->webserver->prepareResponse(pcb, request);
 
         sendHeaders(pcb, response);

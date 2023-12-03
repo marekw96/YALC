@@ -14,6 +14,7 @@
 #define MICROPY_ENABLE_GC                       (1)
 #define MICROPY_PY_GC                           (1)
 #define MODULE_LEDS_ENABLED (1)
+#define MICROPY_FLOAT_IMPL MICROPY_FLOAT_IMPL_FLOAT
 
 
 // Tune the parser to use less RAM by default.
