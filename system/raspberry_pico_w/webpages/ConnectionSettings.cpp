@@ -2,6 +2,9 @@
 
 #include "InternetManager.hpp"
 
+#include "static/header.html.hpp"
+#include "static/footer.html.hpp"
+
 ConnectionSettingsPage::ConnectionSettingsPage(Application &app)
     :app(app)
 {}
@@ -11,6 +14,7 @@ Response ConnectionSettingsPage::handle(const Request &request)
     Response response;
 
     response.headers.push_back(Headers::ContentType::text_html);
+    response.write(header_html);
 
     if(request.uri.find("/connectionSettings/changeSTA") == 0){
         handleChangeSTA(request, response);
@@ -50,7 +54,7 @@ Response ConnectionSettingsPage::handle(const Request &request)
             .write("Security: ").write(to_char(app.internetManager->getAPPAuth())).write("<br />")
             .write("<button>Change</button></form><br />");
 
-
+    response.write(footer_html);
     return response;
 }
 

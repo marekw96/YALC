@@ -1,6 +1,9 @@
 #include "EffectsPage.hpp"
 
 #include "EffectsManager.hpp"
+#include "static/header.html.hpp"
+#include "static/footer.html.hpp"
+
 
 EffectsPage::EffectsPage(Application &app)
     :app(app)
@@ -10,6 +13,7 @@ Response EffectsPage::handle(const Request &request)
 {
     Response response;
     response.headers.push_back(Headers::ContentType::text_html);
+    response.write(header_html);
 
     if(request.uri.find("/effects/select/") == 0){
         handleSelectingNewEffect(request, response);
@@ -56,7 +60,7 @@ Response EffectsPage::handle(const Request &request)
     response.write(std::string("Content: <textarea name=\"code\" rows=\"20\" cols=\"100\">") + code + "</textarea><br />");
     response.write("<button>Add</button><br />");
     response.write("</form>");
-
+    response.write(footer_html);
     return response;
 }
 

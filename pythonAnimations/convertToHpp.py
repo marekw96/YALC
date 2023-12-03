@@ -12,6 +12,9 @@ def convertFileNameToVariable(fileName):
 def prepareLine(line):
     return line.replace("\t", "    ").replace("\"", "\\\"").replace("\n", "\\n")
 
+def prepareLineHex(line):
+
+
 def main():
     parser = argparse.ArgumentParser(
         prog="convertToHpp",
@@ -25,7 +28,7 @@ def main():
 
     with open(args.outputFile, "w") as outpuFile:
         outpuFile.write("#pragma once\n")
-        outpuFile.write(f"const char* {convertFileNameToVariable(args.fileName)} = {{\n")
+        outpuFile.write(f"static const char* {convertFileNameToVariable(args.fileName)} = {{\n")
         for line in lines:
             outpuFile.write(f"  \"{prepareLine(line)}\"\n")
         outpuFile.write(f"}};")

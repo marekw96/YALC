@@ -15,6 +15,7 @@
 
 #include "webpages/ConnectionSettings.hpp"
 #include "webpages/EffectsPage.hpp"
+#include "webpages/IndexPage.hpp"
 
 #include "../pythonAnimations/FallingStar.py.hpp"
 
@@ -39,8 +40,10 @@ void core_with_non_rt_stuff() {
 
     ConnectionSettingsPage connectionSettingsPage(application);
     EffectsPage effectsPage(application);
+    IndexPage indexPage(application);
     webServer.registerHandler(connectionSettingsPage.getHandler());
     webServer.registerHandler(effectsPage.getHandler());
+    webServer.registerHandler(indexPage.getHandler());
 
     LedString_ws2812 ledString(1, 100);
     AnimationEngine vm(ledString);
