@@ -2,6 +2,7 @@
 
 #include "Common.hpp"
 #include "ws2812/ws2812.hpp"
+#include "Time.hpp"
 
 class LedString_ws2812 {
     public:
@@ -17,4 +18,5 @@ class LedString_ws2812 {
 
     private:
         WS2812 leds;
+        TimePoint lastUpdate;
 };
