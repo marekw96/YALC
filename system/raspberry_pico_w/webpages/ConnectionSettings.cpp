@@ -68,10 +68,11 @@ void ConnectionSettingsPage::handleChangeSTA(const Request &request, Response &r
 {
     auto ssidParam = request.getParameter("ssid");
     auto passwdParam = request.getParameter("passwd");
-    auto auth = NetworkAuth::NONE;
+    auto authParam = request.getParameter("auth");
 
     std::string ssid;
     std::string passwd;
+    NetworkAuth auth = NetworkAuth::NONE;
 
     if(!ssidParam) {
         response.write("You need to provide ssid<br />");
@@ -80,7 +81,18 @@ void ConnectionSettingsPage::handleChangeSTA(const Request &request, Response &r
 
     if(passwdParam) {
         passwd = passwdParam->value;
-        auth = NetworkAuth::WPA2_MIXED;
+    }
+
+    if(authParam) {
+        auto val = authParam->value;
+        if(val == "wpa")
+            auth = NetworkAuth::WPA;
+        else if(val == "wpa2")
+            auth = NetworkAuth::WPA2_AES;
+        else if(val == "wpaM")
+            auth = NetworkAuth::WPA2_MIXED;
+        else
+            auth = NetworkAuth::NONE;
     }
 
     app.internetManager->storeSTANetowrkData(ssidParam->value, passwd, auth);

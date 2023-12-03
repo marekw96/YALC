@@ -97,4 +97,7 @@ private:
     NetworkAuth apAUTH = NetworkAuth::NONE;
 
     ConnectionStatus connectionStatus = ConnectionStatus::NOT_CONNECTED;
+
+    bool isDHCPStarted = false;
+    void startDHCP();
 };

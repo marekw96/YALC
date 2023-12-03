@@ -19,7 +19,7 @@ bool Storage::store(const char *path, uint32_t value)
     //remount();
     dump_stats("store::uint32_t");
 
-    int file = pico_open(path, LFS_O_RDWR | LFS_O_CREAT);
+    int file = pico_open(path, LFS_O_RDWR | LFS_O_CREAT | LFS_O_TRUNC);
     if(file < 0) {
         return false;
     }
@@ -47,7 +47,7 @@ bool Storage::store(const char *path, const std::string &value)
     dump_stats("store::string");
     printf("Store[String] at %s with size %d\n", path, value.size());
 
-    int file = pico_open(path, LFS_O_RDWR | LFS_O_CREAT);
+    int file = pico_open(path, LFS_O_RDWR | LFS_O_CREAT | LFS_O_TRUNC);
     if(file < 0) {
         return false;
     }
@@ -89,6 +89,9 @@ std::string Storage::read_string(const char *path)
         return "";
     }
     auto size = pico_size(file);
+
+    printf("[Storage]read string %s with size %d\n", path, size);
+
     std::string value(size, 0);
     pico_read(file, &value[0], size);
     pico_close(file);
