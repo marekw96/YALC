@@ -4,6 +4,7 @@
 #include "Time.hpp"
 #include "ws2812/ws2812.hpp"
 #include "ws2812/LedString_ws2812.hpp"
+#include "ws2812/LedStringCombined.hpp"
 #include "../pythonAnimations/AnimationEngine.hpp"
 
 #include "InternetManager.hpp"
@@ -12,10 +13,12 @@
 #include "pico/cyw43_arch.h"
 #include "Application.hpp"
 #include "EffectsManager.hpp"
+#include "LedsConfiguration.hpp"
 
 #include "webpages/ConnectionSettings.hpp"
 #include "webpages/EffectsPage.hpp"
 #include "webpages/IndexPage.hpp"
+#include "webpages/LedsConfigurationPage.hpp"
 
 #include "../pythonAnimations/FallingStar.py.hpp"
 
@@ -25,8 +28,10 @@ void core_with_non_rt_stuff() {
     Time time;
     InternetManager internet(application);
     WebServer webServer;
+    LedsConfiguration ledsConfiguration(application);
 
     application.internetManager = &internet;
+    application.ledsConfiguration = &ledsConfiguration;
 
     internet.init();
 
@@ -41,15 +46,19 @@ void core_with_non_rt_stuff() {
     ConnectionSettingsPage connectionSettingsPage(application);
     EffectsPage effectsPage(application);
     IndexPage indexPage(application);
+    LedsConfigurationPage ledsConfigurationPage(application);
     webServer.registerHandler(connectionSettingsPage.getHandler());
     webServer.registerHandler(effectsPage.getHandler());
+    webServer.registerHandler(ledsConfigurationPage.getHandler());
     webServer.registerHandler(indexPage.getHandler());
 
-    LedString_ws2812 ledString(1, 100);
-    AnimationEngine vm(ledString);
+    LedString_ws2812 ledString1(0, ledsConfiguration.getPixelsFor(0));
+    LedString_ws2812 ledString2(1, ledsConfiguration.getPixelsFor(1));
+    LedStringCombined ledStrings(ledString1, ledString2);
+    AnimationEngine vm(ledStrings);
     application.animationEngine = &vm;
 
-    ledString.init();
+    ledStrings.init();
 
     auto code = application.effectsManager->getEffectCode(application.effectsManager->getSelectedEffectId());
     vm.changeAnimation(code);
@@ -62,7 +71,7 @@ void core_with_non_rt_stuff() {
         current = time.current();
         internet.periodic();
 
-        ledString.update();
+        ledStrings.update();
         vm.periodic(diff);
         if(application.effectsManager->hasEffectChanged()) {
             printf("MAIN changing effect\n");

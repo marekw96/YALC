@@ -2,8 +2,10 @@
 #include "LedString_ws2812.hpp"
 #include <stdio.h>
 
+PIO PIN_PIO[] = {pio0, pio1};
+
 LedString_ws2812::LedString_ws2812(uint32_t pin, uint32_t pixelsNum)
-    : leds(pin, pixelsNum, pio0, 0, WS2812::FORMAT_GRB), lastUpdate(Time{}.current())
+    : leds(pin, pixelsNum, PIN_PIO[pin], pin, WS2812::FORMAT_GRB), lastUpdate(Time{}.current())
 {
 }
 

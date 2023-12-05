@@ -24,8 +24,10 @@ list(APPEND "RPI_PICO_W_SRC" "system/raspberry_pico_w/WebServer.cpp")
 list(APPEND "RPI_PICO_W_SRC" "system/raspberry_pico_w/webpages/ConnectionSettings.cpp")
 list(APPEND "RPI_PICO_W_SRC" "system/raspberry_pico_w/webpages/EffectsPage.cpp")
 list(APPEND "RPI_PICO_W_SRC" "system/raspberry_pico_w/webpages/IndexPage.cpp")
+list(APPEND "RPI_PICO_W_SRC" "system/raspberry_pico_w/webpages/LedsConfigurationPage.cpp")
 list(APPEND "RPI_PICO_W_SRC" "system/raspberry_pico_w/EffectsManager.cpp")
 list(APPEND "RPI_PICO_W_SRC" "system/raspberry_pico_w/Storage.cpp")
+list(APPEND "RPI_PICO_W_SRC" "system/raspberry_pico_w/LedsConfiguration.cpp")
 list(APPEND "RPI_PICO_W_SRC" "pythonAnimations/AnimationEngine.cpp")
 
 

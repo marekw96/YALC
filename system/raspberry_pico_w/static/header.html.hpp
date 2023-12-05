@@ -51,6 +51,7 @@ static const char* header_html = {
   "        <div class=\"menu\">\n"
   "          <a href=\"/connectionSettings\">Connection</a>\n"
   "          <a href=\"/effects\">Effects</a>\n"
+  "          <a href=\"/leds\">Leds</a>\n"
   "        </div>\n"
   "\n"
   "        <div class=\"main\">"
