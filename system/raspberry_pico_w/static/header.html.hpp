@@ -52,6 +52,7 @@ static const char* header_html = {
   "          <a href=\"/connectionSettings\">Connection</a>\n"
   "          <a href=\"/effects\">Effects</a>\n"
   "          <a href=\"/leds\">Leds</a>\n"
+  "          <a href=\"/reboot\">Reboot</a>\n"
   "        </div>\n"
   "\n"
   "        <div class=\"main\">"

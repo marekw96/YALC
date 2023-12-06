@@ -13,6 +13,7 @@ bool LedsConfiguration::init()
         storeConfig();
     }
     {
+        printf("[LedsConfiguration]init: %s\n", cfg.c_str());
         auto findNewLine = cfg.find("\n");
         auto leds0 = std::stoi(cfg.substr(0, findNewLine));
         auto leds1 = std::stoi(cfg.substr(findNewLine + 1));

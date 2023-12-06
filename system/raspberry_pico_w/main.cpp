@@ -19,6 +19,7 @@
 #include "webpages/EffectsPage.hpp"
 #include "webpages/IndexPage.hpp"
 #include "webpages/LedsConfigurationPage.hpp"
+#include "webpages/RebootPage.hpp"
 
 #include "../pythonAnimations/FallingStar.py.hpp"
 
@@ -34,6 +35,7 @@ void core_with_non_rt_stuff() {
     application.ledsConfiguration = &ledsConfiguration;
 
     internet.init();
+    ledsConfiguration.init();
 
     if(internet.getPrefferedNetworkType() == NetworkType::STANDALONE) {
         internet.connectToSTA();
@@ -47,9 +49,11 @@ void core_with_non_rt_stuff() {
     EffectsPage effectsPage(application);
     IndexPage indexPage(application);
     LedsConfigurationPage ledsConfigurationPage(application);
+    RebootPage rebootPage(application);
     webServer.registerHandler(connectionSettingsPage.getHandler());
     webServer.registerHandler(effectsPage.getHandler());
     webServer.registerHandler(ledsConfigurationPage.getHandler());
+    webServer.registerHandler(rebootPage.getHandler());
     webServer.registerHandler(indexPage.getHandler());
 
     LedString_ws2812 ledString1(0, ledsConfiguration.getPixelsFor(0));
@@ -97,7 +101,7 @@ void delayStartup() {
 int main() {
     stdio_init_all();
 
-    delayStartup();
+    //delayStartup();
 
     Storage storage;
     application.storage;
@@ -107,15 +111,23 @@ int main() {
 
     if(!application.storage->init(Storage::DO_NOT_FORMAT)) {
         printf("Failed to init storage \n");
-    }
-    else {
-        if(storage.read_uint32_t("cfg/init") != 1) {
-            storage.makeDir("cfg");
-            storage.store("cfg/wifi_mode", 0u);
-            storage.store("cfg/ap_ssid", std::string("YALC"));
-            storage.store("cfg/ap_passwd", std::string("12345678"));
-            storage.store("cfg/init", 1u);
+        if(application.storage->init(Storage::FORMAT)) {
+            printf("Formated ok!\n");
         }
+        else{
+            printf("Failed to format again!!");
+            delayStartup();
+            printf("Failed to format again!!");
+        }
+    }
+
+    if(storage.read_uint32_t("cfg/init") != 1) {
+        storage.makeDir("cfg");
+        storage.store("cfg/wifi_mode", 0u);
+        storage.store("cfg/ap_ssid", std::string("YALC"));
+        storage.store("cfg/ap_passwd", std::string("12345678"));
+        storage.store("cfg/ap_passwd", std::string("12345678"));
+        storage.store("cfg/leds", "100\n0");
     }
 
     if(!application.effectsManager->init()) {

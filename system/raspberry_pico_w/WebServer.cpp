@@ -386,8 +386,8 @@ static ParseProgress parsePOST(char* data, uint32_t size, Request& request) {
         }
     }
 
-    printf("Content-Length: %d\n", contentLength);
-    printf("Size: %d\n", size);
+    // printf("Content-Length: %d\n", contentLength);
+    // printf("Size: %d\n", size);
 
     if(contentLength + 2 > size) {
         return {ParseResult::IN_PROGRESS, 0};
@@ -455,7 +455,7 @@ static err_t http_recv(void *arg, tcp_pcb *pcb, pbuf *p, err_t err)
     //printf("result.result: %s\n", to_char(result.result));
 
     if(result.result == ParseResult::DONE) {
-        debug_print(request);
+        //debug_print(request);
         auto response = hs->webserver->prepareResponse(pcb, request);
 
         sendHeaders(pcb, response);

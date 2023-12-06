@@ -25,6 +25,7 @@ list(APPEND "RPI_PICO_W_SRC" "system/raspberry_pico_w/webpages/ConnectionSetting
 list(APPEND "RPI_PICO_W_SRC" "system/raspberry_pico_w/webpages/EffectsPage.cpp")
 list(APPEND "RPI_PICO_W_SRC" "system/raspberry_pico_w/webpages/IndexPage.cpp")
 list(APPEND "RPI_PICO_W_SRC" "system/raspberry_pico_w/webpages/LedsConfigurationPage.cpp")
+list(APPEND "RPI_PICO_W_SRC" "system/raspberry_pico_w/webpages/RebootPage.cpp")
 list(APPEND "RPI_PICO_W_SRC" "system/raspberry_pico_w/EffectsManager.cpp")
 list(APPEND "RPI_PICO_W_SRC" "system/raspberry_pico_w/Storage.cpp")
 list(APPEND "RPI_PICO_W_SRC" "system/raspberry_pico_w/LedsConfiguration.cpp")

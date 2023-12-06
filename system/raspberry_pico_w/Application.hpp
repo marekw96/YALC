@@ -18,4 +18,6 @@ struct Application {
     Storage* storage;
     LedsConfiguration* ledsConfiguration;
     AnimationEngine<LedStringCombined<LedString_ws2812,LedString_ws2812>>* animationEngine;
+
+    bool shouldBeRebooted = false;
 };

@@ -58,4 +58,5 @@ void LedsConfigurationPage::handleChaningPixelsNumber(const Request &request, Re
     app.ledsConfiguration->setPixelsFor(1, pin1value);
 
     response.write("Update leds lenghts<br />");
+    response.write("<strong>Changes will be applied after reboot</strong><br />");
 }
