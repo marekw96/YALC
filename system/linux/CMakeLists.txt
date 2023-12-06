@@ -17,6 +17,7 @@ find_package(SFML 2.5 COMPONENTS graphics REQUIRED)
 list(APPEND "LINUX_SRC" "system/linux/Time.cpp")
 list(APPEND "LINUX_SRC" "system/linux/Socket.cpp")
 list(APPEND "LINUX_SRC" "system/linux/SFMLDisplay.cpp")
+list(APPEND "LINUX_SRC" "pythonAnimations/AnimationEngine.cpp")
 
 add_custom_command(
     OUTPUT ../pythonAnimations/YALCAnimation.py.hpp

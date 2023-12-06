@@ -50,10 +50,11 @@ void SFMLDisplay::setColors(uint32_t startPixel, byte *data, uint32_t numberOfPi
 
 void SFMLDisplay::drawPixels()
 {
+    constexpr int perRow = 25;
     for(int i = 0; i < pixels.size(); ++i){
         sf::CircleShape shape(10.f);
         shape.setFillColor(sf::Color(pixels[i].data[0],pixels[i].data[1], pixels[i].data[2]));
-        shape.setPosition(i*22, 0);
+        shape.setPosition((i%perRow)*22, (i/perRow)*22);
         window.draw(shape);
     }
 }
