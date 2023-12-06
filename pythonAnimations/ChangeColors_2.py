@@ -1,10 +1,10 @@
 STEPS = 500
 
 class ChangeColors2(YALCAnimation):
-    color_1 = [255,255,255]
+    color_1 = [255,255,0]
     color_2 = [0,0,0]
-    current_color = [255,255,255]
-    step = []
+    current_color = [255,255,0]
+    step = [1,1,1]
     counter = 0
     timeCounter = 0
 
@@ -12,7 +12,9 @@ class ChangeColors2(YALCAnimation):
         self.initialise()
 
     def initialise(self):
-        self.step = [(self.color_1[0] - self.color_2[0])/(STEPS*1.), (self.color_1[1] - self.color_2[1])/(STEPS*1.), (self.color_1[2] - self.color_2[2])/(STEPS*1.)]
+        self.step[0] = (self.color_2[0] - self.color_1[0])/STEPS
+        self.step[1] = (self.color_2[1] - self.color_1[1])/STEPS
+        self.step[2] = (self.color_2[2] - self.color_1[2])/STEPS
         self.counter = 0
         self.current_color[0] = self.color_1[0]
         self.current_color[1] = self.color_1[1]
@@ -24,17 +26,18 @@ class ChangeColors2(YALCAnimation):
 
     def periodic(self, timeElapsedInUs):
         if self.timeCounter > 3300:
-            self.current_color[0] += self.step[0]
-            self.current_color[1] += self.step[1]
-            self.current_color[2] += self.step[2]
-            self._fill([int(self.current_color[0]),int(self.current_color[1]),int(self.current_color[2])])
             self.counter += 1
             self.timeCounter = 0
-            if self.counter == STEPS:
+            if self.counter >= STEPS-1:
                 self.counter = 0
                 self.step[0] *= -1
                 self.step[1] *= -1
                 self.step[2] *= -1
+            self.current_color[0] += self.step[0]
+            self.current_color[1] += self.step[1]
+            self.current_color[2] += self.step[2]
+            self._fill([int(self.current_color[0]),int(self.current_color[1]),int(self.current_color[2])])
+
 
         self.timeCounter += timeElapsedInUs
 

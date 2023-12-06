@@ -12,8 +12,6 @@ def convertFileNameToVariable(fileName):
 def prepareLine(line):
     return line.replace("\t", "    ").replace("\"", "\\\"").replace("\n", "\\n")
 
-def prepareLineHex(line):
-
 
 def main():
     parser = argparse.ArgumentParser(
