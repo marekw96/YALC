@@ -83,6 +83,7 @@ class AnimationEngine {
         }
 
         const std::vector<ParameterDescription> getParameters() {
+            parameters.clear();
             this->exec("currentAnimation.registerParameters()");
             return parameters;
         }
