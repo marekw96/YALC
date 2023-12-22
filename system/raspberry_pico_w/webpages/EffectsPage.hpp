@@ -12,7 +12,8 @@ private:
     Application app;
 
     void handleSelectingNewEffect(const Request& request, Response& response);
-    void handleAddingNewEffect(const Request& request, Response& response);
+    bool handleAddingNewEffect(const Request& request, Response& response);
     void handleRemovingEffect(const Request& request, Response& response);
     void handlechangeParameters(const Request& request, Response& response);
+    bool handleRemovingEffectQuestion(const Request& request, Response& response);
 };

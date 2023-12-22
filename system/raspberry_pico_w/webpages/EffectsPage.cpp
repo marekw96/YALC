@@ -14,52 +14,53 @@ Response EffectsPage::handle(const Request &request)
     Response response;
     response.headers.push_back(Headers::ContentType::text_html);
     response.write(header_html);
+    bool printContent = true;
 
     if(request.uri.find("/effects/select/") == 0){
         handleSelectingNewEffect(request, response);
     }
     if(request.uri.find("/effects/add") == 0){
-        handleAddingNewEffect(request, response);
+        printContent = handleAddingNewEffect(request, response);
     }
-    if(request.uri.find("/effects/remove") == 0) {
+    if(request.uri.find("/effects/remove_check") == 0) {
+        printContent = handleRemovingEffectQuestion(request, response);
+    }
+    if(request.uri.find("/effects/remove_yes") == 0) {
         handleRemovingEffect(request, response);
     }
     if(request.uri.find("/effects/changeParameters") == 0) {
         handlechangeParameters(request, response);
     }
 
-    response.write("Effects list:");
-    response.write("<ul>");
-    for(const auto& effect: app.effectsManager->getListOfEffects()) {
-        response.write("<li>");
-        response.write(std::string("<a href=\"/effects/select/") + std::to_string(effect.id) + "\">" + effect.name + "</a>");
-        if(effect.id != app.effectsManager->getSelectedEffectId())
-            response.write(std::string("  <a href=\"/effects/remove/") + std::to_string(effect.id) + "\">X</a>");
+    if(printContent){
+        response.write("<a href=\"/effects/add\">Add new animation</a><br /><br />");
+        response.write("Effects list:");
+        response.write("<ul>");
+        for(const auto& effect: app.effectsManager->getListOfEffects()) {
+            response.write("<li>");
+            response.write(std::string("<a href=\"/effects/select/") + std::to_string(effect.id) + "\">" + effect.name + "</a>");
+            if(effect.id != app.effectsManager->getSelectedEffectId())
+                response.write(std::string("  <a href=\"/effects/remove_check/") + std::to_string(effect.id) + "\">X</a>");
 
-        if(effect.parameters.size() > 0) {
-            response.write("<br /><form method=\"POST\" action=\"/effects/changeParameters/")
-                    .write(std::to_string(effect.id)).write("\">");
+            if(effect.parameters.size() > 0) {
+                response.write("<br /><form method=\"POST\" action=\"/effects/changeParameters/")
+                        .write(std::to_string(effect.id)).write("\">");
 
-            for(const auto& param: effect.parameters){
-                response.write(param.name).write(": ")
-                       .write("<input type=\"color\" name=\"").write(param.name).write("\" value=\"#")
-                       .write(param.value).write("\" /><br />");
+                for(const auto& param: effect.parameters){
+                    response.write(param.name).write(": ")
+                        .write("<input type=\"color\" name=\"").write(param.name).write("\" value=\"#")
+                        .write(param.value).write("\" /><br />");
+                }
+
+                response.write("<button>Store</button></form>");
             }
-
-            response.write("<button>Store</button></form>");
+            response.write("</li>");
         }
-        response.write("</li>");
+        response.write("</ul>");
     }
-    response.write("</ul>");
 
-    std::string name = "";
-    std::string code = "";
-
-    response.write("<br /><br />Add new:<form method=\"POST\" action=\"/effects/add\">");
-    response.write(std::string("Content: <textarea name=\"code\" rows=\"20\" cols=\"70\">") + code + "</textarea><br />");
-    response.write("<button>Add</button><br />");
-    response.write("</form>");
     response.write(footer_html);
+
     return response;
 }
 
@@ -89,7 +90,7 @@ void EffectsPage::handleSelectingNewEffect(const Request &request, Response &res
     response.write("<br />");
 }
 
-void EffectsPage::handleAddingNewEffect(const Request &request, Response &response)
+bool EffectsPage::handleAddingNewEffect(const Request &request, Response &response)
 {
     std::string code = "";
     for(const auto& parameter: request.parameters){
@@ -98,8 +99,12 @@ void EffectsPage::handleAddingNewEffect(const Request &request, Response &respon
     }
 
     if(code.size() == 0){
-        response.write("<p>Please provide code</p>");
-        return;
+        response.write("Add new:<form method=\"POST\" action=\"/effects/add\">");
+        response.write("Content: <textarea name=\"code\" rows=\"20\" cols=\"70\"></textarea><br />");
+        response.write("<button>Add</button><br />");
+        response.write("</form>");
+
+        return false;
     }
 
     auto result = app.effectsManager->addNewEffect(code);
@@ -108,6 +113,8 @@ void EffectsPage::handleAddingNewEffect(const Request &request, Response &respon
         response.write("Added new effect!<br />");
     else
         response.write("Failed to add new effect!<br />");
+
+    return true;
 }
 
 void EffectsPage::handleRemovingEffect(const Request &request, Response &response)
@@ -133,6 +140,27 @@ void EffectsPage::handleRemovingEffect(const Request &request, Response &respons
     else {
         response.write("Failed during effect removing<br />");
     }
+}
+
+bool EffectsPage::handleRemovingEffectQuestion(const Request &request, Response &response)
+{
+    auto part = request.uri.rfind("/");
+    if(part == request.uri.length()-1) {
+        response.write("Unable to  effect<br />");
+        return true;
+    }
+
+    auto id_str = request.uri.substr(part+1);
+    uint32_t id = std::atoi(id_str.c_str());
+
+    if(id == app.effectsManager->getSelectedEffectId()) {
+        response.write("Cannot remove selected effect<br />");
+        return true;
+    }
+
+    response.write("Do You want to remove effect? Click <a href=\"/effects/remove_yes/").write(std::to_string(id)).write("\">here</a> to remove.<br />");
+
+    return false;
 }
 
 void EffectsPage::handlechangeParameters(const Request &request, Response &response)
