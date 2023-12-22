@@ -55,9 +55,8 @@ Response EffectsPage::handle(const Request &request)
     std::string name = "";
     std::string code = "";
 
-    response.write("<form method=\"POST\" action=\"/effects/add\">");
-    response.write(std::string("Name: <input type=\"text\" name=\"name\" value =\"") + name + "\"><br />");
-    response.write(std::string("Content: <textarea name=\"code\" rows=\"20\" cols=\"100\">") + code + "</textarea><br />");
+    response.write("<br /><br />Add new:<form method=\"POST\" action=\"/effects/add\">");
+    response.write(std::string("Content: <textarea name=\"code\" rows=\"20\" cols=\"70\">") + code + "</textarea><br />");
     response.write("<button>Add</button><br />");
     response.write("</form>");
     response.write(footer_html);
@@ -92,21 +91,18 @@ void EffectsPage::handleSelectingNewEffect(const Request &request, Response &res
 
 void EffectsPage::handleAddingNewEffect(const Request &request, Response &response)
 {
-    std::string name = "";
     std::string code = "";
     for(const auto& parameter: request.parameters){
-        if(parameter.name == "name")
-            name = parameter.value;
         if(parameter.name == "code")
             code = parameter.value;
     }
 
-    if(name.size() == 0 || code.size() == 0){
-        response.write("<p>Please provide name and code</p>");
+    if(code.size() == 0){
+        response.write("<p>Please provide code</p>");
         return;
     }
 
-    auto result = app.effectsManager->addNewEffect(name, code);
+    auto result = app.effectsManager->addNewEffect(code);
 
     if(result)
         response.write("Added new effect!<br />");

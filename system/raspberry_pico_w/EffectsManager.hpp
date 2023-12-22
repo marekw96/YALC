@@ -31,7 +31,7 @@ public:
     bool hasEffectChanged();
     void reloadCurrentEffect();
     void restartedEffects();
-    bool addNewEffect(const std::string& name, const std::string& code);
+    bool addNewEffect(const std::string& code);
     bool removeEffect(uint32_t id);
 
     bool setParameterForEffect(uint32_t id, const std::string& name, const std::string& value);

@@ -81,7 +81,7 @@ void EffectsManager::restartedEffects()
     }
 }
 
-bool EffectsManager::addNewEffect(const std::string &name_, const std::string &code)
+bool EffectsManager::addNewEffect(const std::string &code)
 {
     auto id = lastRegisteredId + 1;
     printf("Adding new effect with id %d\n", id);
