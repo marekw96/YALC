@@ -29,6 +29,7 @@ public:
     uint32_t getSelectedEffectId();
 
     bool hasEffectChanged();
+    void reloadCurrentEffect();
     void restartedEffects();
     bool addNewEffect(const std::string& name, const std::string& code);
     bool removeEffect(uint32_t id);

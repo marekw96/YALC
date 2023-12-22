@@ -24,8 +24,6 @@
 #include "UDPSocket.hpp"
 #include "Discover.hpp"
 
-#include "../pythonAnimations/FallingStar.py.hpp"
-
 Application application;
 
 void core_with_non_rt_stuff() {

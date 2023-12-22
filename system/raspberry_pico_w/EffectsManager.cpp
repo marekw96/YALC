@@ -43,6 +43,10 @@ std::string EffectsManager::getEffectCode(uint32_t id)
     return "";
 }
 
+void EffectsManager::reloadCurrentEffect(){
+    effectChanged = true;
+}
+
 bool EffectsManager::selectEffect(uint32_t newId)
 {
     if(selectedEffect != newId) {
@@ -111,6 +115,8 @@ bool EffectsManager::addNewEffect(const std::string &name_, const std::string &c
         printf("[EffectsManager] failed to store effect parameters\n");
         return false;
     }
+
+    app.effectsManager->reloadCurrentEffect();
 
     app.storage->store("cfg/ef_last_reg", id);
     lastRegisteredId = id;

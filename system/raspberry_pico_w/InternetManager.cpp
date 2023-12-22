@@ -199,7 +199,7 @@ bool InternetManager::connectToSTA()
 
     cyw43_arch_enable_sta_mode();
     whenStartedConnectingToSTA = Time{}.current();
-    printf("[InternetManager::connectToSTA] %s %s %s\n", storedSSID.c_str(),storedPASSWORD.c_str(), to_char(storedAUTH));
+    //printf("[InternetManager::connectToSTA] %s %s %s\n", storedSSID.c_str(),storedPASSWORD.c_str(), to_char(storedAUTH));
     auto res = cyw43_arch_wifi_connect_async(storedSSID.c_str(), storedPASSWORD.c_str(), static_cast<uint32_t>(storedAUTH)) == 0;
 
     return res;
