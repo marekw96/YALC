@@ -21,6 +21,9 @@
 #include "webpages/LedsConfigurationPage.hpp"
 #include "webpages/RebootPage.hpp"
 
+#include "UDPSocket.hpp"
+#include "Discover.hpp"
+
 #include "../pythonAnimations/FallingStar.py.hpp"
 
 Application application;
@@ -30,6 +33,12 @@ void core_with_non_rt_stuff() {
     InternetManager internet(application);
     WebServer webServer;
     LedsConfiguration ledsConfiguration(application);
+    UDPSocket udpSocket;
+    Discover::DeviceDescription description{.name = {'L', 'E','D', 'Y'}, .type = Discover::Type::LEDS};
+    Discover::SocketFunctions socketBroadcastFunctions;
+    socketBroadcastFunctions.obj = &udpSocket;
+    socketBroadcastFunctions.sendBroadcast = reinterpret_cast<Discover::SendUDPPacketFunctionType>(&UDPSocket::sendBroadcast);
+    //Discover::Sender discoverMessanger(description, {}, socketBroadcastFunctions);
 
     application.internetManager = &internet;
     application.ledsConfiguration = &ledsConfiguration;
@@ -77,6 +86,7 @@ void core_with_non_rt_stuff() {
 
         ledStrings.update();
         vm.periodic(diff);
+        //discoverMessanger.periodic(diff.asMiliseconds());
         if(application.effectsManager->hasEffectChanged()) {
             printf("MAIN changing effect\n");
             code = application.effectsManager->getEffectCode(application.effectsManager->getSelectedEffectId());
@@ -127,7 +137,8 @@ int main() {
         storage.store("cfg/ap_ssid", std::string("YALC"));
         storage.store("cfg/ap_passwd", std::string("12345678"));
         storage.store("cfg/ap_passwd", std::string("12345678"));
-        storage.store("cfg/leds", "100\n0");
+        storage.store("cfg/leds", "0\n100");
+        storage.store("cfg/init", 1);
     }
 
     if(!application.effectsManager->init()) {
