@@ -21,7 +21,7 @@ extern "C" {
 #include <vector>
 #include "../pythonAnimations/Parameter.hpp"
 
-static char heap[16 * 1024];
+static char heap[32 * 1024];
 
 template <typename Display>
 class AnimationEngine {
