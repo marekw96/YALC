@@ -84,6 +84,7 @@ void core_with_non_rt_stuff() {
 
         ledStrings.update();
         vm.periodic(diff);
+        application.effectsManager->periodic(diff);
         //discoverMessanger.periodic(diff.asMiliseconds());
         if(application.effectsManager->hasEffectChanged()) {
             printf("MAIN changing effect\n");
@@ -133,7 +134,6 @@ int main() {
         storage.makeDir("cfg");
         storage.store("cfg/wifi_mode", 0u);
         storage.store("cfg/ap_ssid", std::string("YALC"));
-        storage.store("cfg/ap_passwd", std::string("12345678"));
         storage.store("cfg/ap_passwd", std::string("12345678"));
         storage.store("cfg/leds", "0\n100");
         storage.store("cfg/init", 1);

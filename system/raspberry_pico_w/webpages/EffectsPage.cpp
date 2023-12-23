@@ -31,8 +31,32 @@ Response EffectsPage::handle(const Request &request)
     if(request.uri.find("/effects/changeParameters") == 0) {
         handlechangeParameters(request, response);
     }
+    if(request.uri.find("/effects/rotate") == 0) {
+        handleChangeRotation(request, response);
+    }
 
     if(printContent){
+        auto writeOption = [&](uint32_t ms, const std::string& name){
+            response.write("<option value=\"")
+                    .write(std::to_string(ms)).write("\" ").write(app.effectsManager->getNextAnimationTimeout() == ms?"selected":"").write(">").write(name).write("</option>");
+        };
+
+        response.write("Change animation to next user defined animation after: ");
+        response.write("<form method=\"POST\" action=\"/effects/rotate\">")
+                .write("<select name=\"timeout\">");
+        writeOption(0, "OFF");
+        writeOption(5*1000, "5sec");
+        writeOption(10*1000, "10sec");
+        writeOption(15*1000, "15sec");
+        writeOption(30*1000, "30sec");
+        writeOption(60*1000, "1min");
+        writeOption(3*60*1000, "3min");
+        writeOption(5*60*1000, "5min");
+        writeOption(10*60*1000, "10min");
+        response.write("</select>")
+                .write("<button>Set</button>")
+                .write("</form><br /><br />");
+
         response.write("<a href=\"/effects/add\">Add new animation</a><br /><br />");
         response.write("Effects list:");
         response.write("<ul>");
@@ -178,4 +202,20 @@ void EffectsPage::handlechangeParameters(const Request &request, Response &respo
         printf("[EffectsPage]setting parameter %s for id %d with value %s\n", param.name.c_str(), id, param.value.c_str());
         app.effectsManager->setParameterForEffect(id, param.name, param.value.substr(1));
     }
+}
+
+void EffectsPage::handleChangeRotation(const Request &request, Response &response)
+{
+    auto timeoutParam = request.getParameter("timeout");
+
+    if(!timeoutParam) {
+        response.write("Unable to change rotation<br />");
+        return;
+    }
+
+    uint32_t value = std::atoi(timeoutParam->value.c_str());
+
+    app.effectsManager->setNextAnimationTimeout(value);
+
+    response.write("Changed timeout!<br />");
 }

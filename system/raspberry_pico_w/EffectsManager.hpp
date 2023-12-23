@@ -23,6 +23,8 @@ class EffectsManager {
 public:
     EffectsManager(Application& app);
     bool init();
+    void periodic(Duration diff);
+
     std::vector<EffectDescription> getListOfEffects();
     std::string getEffectCode(uint32_t id);
     bool selectEffect(uint32_t newId);
@@ -35,12 +37,17 @@ public:
     bool removeEffect(uint32_t id);
 
     bool setParameterForEffect(uint32_t id, const std::string& name, const std::string& value);
+
+    uint32_t getNextAnimationTimeout() const;
+    void setNextAnimationTimeout(uint32_t miliseconds);
 private:
     Application& app;
     uint32_t selectedEffect = 0;
     uint32_t lastRegisteredId = 2;
     bool effectChanged = false;
     std::vector<EffectDescription> effects = {{0,"MyAnimation", EffectType::BUILTIN}, {1,"FallingStar", EffectType::BUILTIN}};
+    uint32_t nextAnimationTimeoutMs = 0;
+    uint32_t nextAnimationTimeElapsedUs = 0;
 
     std::string fetchEffectCode(uint32_t id);
     void registerNewEffect(int id, const std::string& name, const std::vector<ParameterDescription>& parameters);

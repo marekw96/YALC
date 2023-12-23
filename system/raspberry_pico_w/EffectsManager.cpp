@@ -16,9 +16,54 @@ bool EffectsManager::init()
 
     printf("[EffectsManager]lastRegisteredId: %d\n", lastRegisteredId);
 
+    auto additionalCfg = app.storage->read_string("cfg/eff_additional");
+    if(!additionalCfg.empty()){
+        nextAnimationTimeoutMs = std::atoi(additionalCfg.c_str());
+        printf("[EffectsManager]nextAnimationTimeoutMs: %d\n", nextAnimationTimeoutMs);
+    }
+
     readAllStoredEffects();
 
     return true;
+}
+
+void EffectsManager::periodic(Duration diff)
+{
+    if(getNextAnimationTimeout() != 0){
+        if(nextAnimationTimeElapsedUs/1000 > getNextAnimationTimeout()){
+            nextAnimationTimeElapsedUs = 0;
+
+            auto effectid = 0;
+            for(auto i = 0u; i < effects.size(); ++i) {
+                if(effects[i].id == selectedEffect) {
+                    effectid = i;
+                    break;
+                }
+            }
+
+            uint32_t nextId = 0;
+            if(effectid == effects.size() -1){
+                for(int i = 0; i < effects.size(); ++i){
+                    if(effects[i].type == EffectType::USER_DEFINED){
+                        nextId = i;
+                        break;
+                    }
+                }
+            }
+            else{
+                nextId = effectid + 1;
+            }
+
+            if(nextId != 0){
+                selectEffect(effects[nextId].id);
+            }
+            else{
+                printf("[EffectsManager]periodic - Unable to find next effect\n");
+            }
+        }
+
+        nextAnimationTimeElapsedUs += diff.asMicroseconds();
+    }
 }
 
 std::vector<EffectDescription> EffectsManager::getListOfEffects()
@@ -171,6 +216,21 @@ bool EffectsManager::setParameterForEffect(uint32_t id, const std::string &name,
     }
 
     return false;
+}
+
+uint32_t EffectsManager::getNextAnimationTimeout() const
+{
+    return nextAnimationTimeoutMs;
+}
+
+void EffectsManager::setNextAnimationTimeout(uint32_t miliseconds)
+{
+    nextAnimationTimeoutMs = miliseconds;
+
+    printf("[EffectsManager]setNextAnimationTimeout: %d\n", nextAnimationTimeoutMs);
+
+    auto load = std::to_string(nextAnimationTimeoutMs);
+    app.storage->store("cfg/eff_additional", load);
 }
 
 std::string EffectsManager::fetchEffectCode(uint32_t id)
