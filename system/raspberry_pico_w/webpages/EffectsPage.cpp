@@ -63,7 +63,7 @@ Response EffectsPage::handle(const Request &request)
         for(const auto& effect: app.effectsManager->getListOfEffects()) {
             response.write("<li>");
             response.write(std::string("<a href=\"/effects/select/") + std::to_string(effect.id) + "\">" + effect.name + "</a>");
-            if(effect.id != app.effectsManager->getSelectedEffectId())
+            if(effect.id != app.effectsManager->getSelectedEffectId() && effect.type != EffectType::BUILTIN)
                 response.write(std::string("  <a href=\"/effects/remove_check/") + std::to_string(effect.id) + "\">X</a>");
 
             if(effect.parameters.size() > 0) {
