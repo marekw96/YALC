@@ -40,5 +40,5 @@ void RebootPage::handleRebootAgreement(const Request &request, Response &respons
 {
     response.write("<strong>Device will be rebooted</strong><br />");
     app.shouldBeRebooted = true;
-    watchdog_reboot(0, SRAM_END, 0);
+    watchdog_reboot(0, SRAM_END, 350);
 }
