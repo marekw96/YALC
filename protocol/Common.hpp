@@ -9,7 +9,8 @@ using byte = unsigned char;
 
 namespace YALC {
     enum class ColorOrder {RGB=0,
-                           GRB=1};
+                           GRB=1,
+                           BGR=2};
 
     struct PixelData8Bit { byte data[3] = {0}; };
 }

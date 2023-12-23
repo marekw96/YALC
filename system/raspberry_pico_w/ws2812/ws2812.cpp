@@ -57,24 +57,6 @@ void WS2812::initialize(uint pin, uint length, PIO pio, uint sm, DataByte b1, Da
 }
 
 uint32_t WS2812::convertData(uint32_t rgbw) {
-    uint32_t result = 0;
-    for (uint b = 0; b < 4; b++) {
-        switch (bytes[b]) {
-            case RED:
-                result |= (rgbw & 0xFF);
-                break;
-            case GREEN:
-                result |= (rgbw & 0xFF00) >> 8;
-                break;
-            case BLUE:
-                result |= (rgbw & 0xFF0000) >> 16;
-                break;
-            case WHITE:
-                result |= (rgbw & 0xFF000000) >> 24;
-                break;
-        }
-        result <<= 8;
-    }
     return rgbw << 8;
 }
 

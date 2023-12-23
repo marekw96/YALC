@@ -131,20 +131,10 @@ class AnimationEngine {
         }
 
         void bindSetPixelColorRGB() {
-            if(display.colorOrder() == YALC::ColorOrder::GRB) {
-                func_to_set_pixel = [](int id, int r, int g, int b) -> void {
-                    Display* display = reinterpret_cast<Display*>(display_obj);
-                    byte data[] = {(byte)g,(byte)r,(byte)b};
-                    display->setColors(id, data, 1);
-                };
-            }
-            else {
-                func_to_set_pixel = [](int id, int r, int g, int b) -> void {
-                    Display* display = reinterpret_cast<Display*>(display_obj);
-                    byte data[] = {(byte)r,(byte)g,(byte)b};
-                    display->setColors(id, data, 1);
-                };
-            }
+            func_to_set_pixel = [](int id, int r, int g, int b) -> void {
+                Display* display = reinterpret_cast<Display*>(display_obj);
+                display->setPixel(id, r,g,b);
+            };
         }
 
         void execYALCAnimationBaseClass(){

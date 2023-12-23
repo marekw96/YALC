@@ -63,8 +63,8 @@ void core_with_non_rt_stuff() {
     webServer.registerHandler(rebootPage.getHandler());
     webServer.registerHandler(indexPage.getHandler());
 
-    LedString_ws2812 ledString1(0, ledsConfiguration.getPixelsFor(0));
-    LedString_ws2812 ledString2(1, ledsConfiguration.getPixelsFor(1));
+    LedString_ws2812 ledString1(0, ledsConfiguration.getPixelsFor(0), to_colorOrder(ledsConfiguration.getColorConfig(0)));
+    LedString_ws2812 ledString2(1, ledsConfiguration.getPixelsFor(1), to_colorOrder(ledsConfiguration.getColorConfig(1)));
     LedStringCombined ledStrings(ledString1, ledString2);
     AnimationEngine vm(ledStrings);
     application.animationEngine = &vm;

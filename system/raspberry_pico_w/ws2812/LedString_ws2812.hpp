@@ -6,7 +6,7 @@
 
 class LedString_ws2812 {
     public:
-        LedString_ws2812(uint32_t pin, uint32_t pixelsNum);
+        LedString_ws2812(uint32_t pin, uint32_t pixelsNum, YALC::ColorOrder colorConfig);
 
         void init();
         void update();
@@ -15,8 +15,10 @@ class LedString_ws2812 {
         uint64_t ledsCount() const;
         YALC::ColorOrder colorOrder() const;
         void setColors(uint32_t startPixel, byte* data, uint32_t numberOfPixels);
+        void setPixel(uint32_t pixel, uint8_t r, uint8_t g, uint8_t b);
 
     private:
         WS2812 leds;
         TimePoint lastUpdate;
+        YALC::ColorOrder colorConfig;
 };

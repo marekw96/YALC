@@ -18,8 +18,16 @@ public:
         return a.ledsCount() + b.ledsCount();
     }
 
-    YALC::ColorOrder colorOrder(){
-        return a.colorOrder(); //For now lets assume that both have the same
+    void setPixel(uint32_t pixel, uint8_t red, uint8_t green, uint8_t blue) {
+        //python animations for now only sets one pixel at time.
+        //In future it needs to be done better!
+
+        if(pixel < a.ledsCount()) {
+            a.setPixel(pixel, red, green, blue);
+        }
+        else if(pixel < a.ledsCount() + b.ledsCount()) {
+            b.setPixel(pixel, red, green, blue);
+        }
     }
 
     void setColors(uint32_t startPixel, byte* data, uint32_t numberOfPixels) {
