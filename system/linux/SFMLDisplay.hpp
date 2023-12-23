@@ -14,6 +14,7 @@ public:
     uint64_t ledsCount() const;
     YALC::ColorOrder colorOrder() const;
     void setColors(uint32_t startPixel, byte* data, uint32_t numberOfPixels);
+    void setPixel(uint32_t pixel, uint8_t r, uint8_t g, uint8_t b);
 
 private:
     std::vector<YALC::PixelData8Bit> pixels;

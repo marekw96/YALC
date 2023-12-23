@@ -48,6 +48,13 @@ void SFMLDisplay::setColors(uint32_t startPixel, byte *data, uint32_t numberOfPi
     }
 }
 
+void SFMLDisplay::setPixel(uint32_t pixel, uint8_t r, uint8_t g, uint8_t b)
+{
+    pixels[pixel].data[0] = r;
+    pixels[pixel].data[1] = g;
+    pixels[pixel].data[2] = b;
+}
+
 void SFMLDisplay::drawPixels()
 {
     constexpr int perRow = 25;
