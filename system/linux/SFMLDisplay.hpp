@@ -6,7 +6,7 @@
 
 class SFMLDisplay {
 public:
-    SFMLDisplay(int pixels, int width, int height);
+    SFMLDisplay(int pixels, int width, int height, uint32_t wrapLeds);
     void periodic();
     bool isOk();
 
@@ -20,6 +20,7 @@ private:
     std::vector<YALC::PixelData8Bit> pixels;
     int width;
     int height;
+    uint32_t wrapLeds;
 
 
     sf::RenderWindow window;

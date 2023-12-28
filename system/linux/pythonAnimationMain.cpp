@@ -20,6 +20,9 @@ std::string readWholeFile(std::string fileName) {
 int main(int argc, char* argv[]) {
     bool shouldEnd = false;
     std::string params = "";
+    uint32_t ledStringLength = 100;
+    uint32_t wrapLeds = 25;
+    uint32_t windowWidth = 650;
 
     if(argc <= 1){
         std::cerr << "Pass animation file name" << std::endl;
@@ -37,11 +40,30 @@ int main(int argc, char* argv[]) {
                 std::cout << "Got some parameters:" << params << std::endl;
             }
         }
+        else if(arg == "--length") {
+            if(i+1 < argc){
+                ledStringLength = std::atoi(argv[i+1]);
+                std::cout << "Got length:" << ledStringLength << std::endl;
+            }
+        }
+        else if(arg == "--windowWidth") {
+            if(i+1 < argc){
+                windowWidth = std::atoi(argv[i+1]);
+                std::cout << "Got window width:" << windowWidth << std::endl;
+            }
+        }
+        else if(arg == "--wrapLeds") {
+            if(i+1 < argc){
+                wrapLeds = std::atoi(argv[i+1]);
+                std::cout << "Got wrap leds:" << wrapLeds << std::endl;
+            }
+        }
+
     }
 
 
     Time time;
-    SFMLDisplay sfmlDisplay(200, 650, 150);
+    SFMLDisplay sfmlDisplay(ledStringLength, windowWidth, 150, wrapLeds);
 
     auto* vm = new AnimationEngine(sfmlDisplay);
 

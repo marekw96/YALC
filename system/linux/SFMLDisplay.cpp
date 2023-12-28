@@ -2,8 +2,8 @@
 
 
 
-SFMLDisplay::SFMLDisplay(int pixels, int width, int height)
-    :pixels(pixels), width(width), height(height),
+SFMLDisplay::SFMLDisplay(int pixels, int width, int height, uint32_t wrapLeds)
+    :pixels(pixels), width(width), height(height), wrapLeds(wrapLeds),
     window(sf::VideoMode(width, height), "SFMLDisplay")
 {
 
@@ -57,7 +57,7 @@ void SFMLDisplay::setPixel(uint32_t pixel, uint8_t r, uint8_t g, uint8_t b)
 
 void SFMLDisplay::drawPixels()
 {
-    constexpr int perRow = 25;
+    uint32_t perRow = wrapLeds;
     for(int i = 0; i < pixels.size(); ++i){
         sf::CircleShape shape(10.f);
         shape.setFillColor(sf::Color(pixels[i].data[0],pixels[i].data[1], pixels[i].data[2]));
