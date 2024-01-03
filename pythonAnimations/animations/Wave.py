@@ -10,8 +10,9 @@ class Wave(YALCAnimation):
 	def periodic(self, timeElapsedInUs):
 		if self.timeElapsed > 10000:
 			self.timeElapsed = 0
-			self.setPixelColor(50 - self.counter, self.colors[self.color_id][0], self.colors[self.color_id][1], self.colors[self.color_id][2])
-			self.setPixelColor(50 + self.counter, self.colors[self.color_id][0], self.colors[self.color_id][1], self.colors[self.color_id][2])
+			middle = self.getNumberOfPixels() / 2
+			self.setPixelColor(int(middle) - self.counter, self.colors[self.color_id][0], self.colors[self.color_id][1], self.colors[self.color_id][2])
+			self.setPixelColor(int(middle) + self.counter, self.colors[self.color_id][0], self.colors[self.color_id][1], self.colors[self.color_id][2])
 
 			self.counter = self.counter + 1
 
@@ -19,7 +20,7 @@ class Wave(YALCAnimation):
 
 		if self.counter > self.getNumberOfPixels() / 2:
 			self.counter = 0
-			self.color_id = (self.color_id + 1) % 3
+			self.color_id = (self.color_id + 1) % len(self.colors)
 
 def create():
 	return Wave()

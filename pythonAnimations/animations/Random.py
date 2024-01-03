@@ -1,10 +1,11 @@
 class Random(YALCAnimation):
     changeTimer = int(0)
-    counter = 100
+    counter = 0
     color = [255,255,255]
     last_color = [0,0,0]
     led_list = []
     time = 125000
+    step = 0
     phase = 1
     select = 10
 
@@ -15,6 +16,8 @@ class Random(YALCAnimation):
         for id in range(self.getNumberOfPixels()):
             self.setPixelColor(id, self.color[0], self.color[1], self.color[2])
         self.shuffle_list(0)
+        self.step = 125000 / self.getNumberOfPixels()
+        self.counter = self.getNumberOfPixels()
 
     def name(self):
         return "Random"
@@ -22,7 +25,7 @@ class Random(YALCAnimation):
     def periodic(self, timeElapsedInUs):
         seed = self.changeTimer
         if (self.changeTimer > self.time and self.phase == 0):
-            self.time = self.time - 1250
+            self.time = self.time - self.step
             self.changeTimer = 0
             self.setPixelColor(self.led_list.pop(), self.color[0], self.color[1], self.color[2])
             self.counter = self.counter + 1
