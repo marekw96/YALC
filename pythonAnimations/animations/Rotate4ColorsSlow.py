@@ -1,8 +1,8 @@
 STATE_SOLID = 1
 STATE_CHANGE = 2
 
-STATE_SOLID_WAIT = 100000000#10 seconds
-STEPS = 600
+STATE_SOLID_WAIT = 10000000#10 seconds
+STEPS = 400
 
 def calculateStep(color1, color2, steps):
 	return [(int(color2[0]) - int(color1[0])) / steps,

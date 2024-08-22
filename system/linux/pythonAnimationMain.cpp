@@ -77,6 +77,12 @@ int main(int argc, char* argv[]) {
         std::cout << "Paramter name: " << parameter.name << ", defaultValue: " << parameter.defaultValue << std::endl;
     }
 
+    auto moduleInputs = vm->getInputs();
+    std::cout << "Module inputs[" << moduleInputs.size() << "]:" << std::endl;
+    for(const auto& input: moduleInputs){
+        std::cout << "Input name:" << input.name << std::endl;
+    }
+
     if(!params.empty()){
         size_t pos = 0;
         while(true){
@@ -105,10 +111,11 @@ int main(int argc, char* argv[]) {
             pos = vend+1;
         }
     }
-
+    std::cout << "Params parsed" << std::endl;
     //vm->setColorParameterValue("fillColor", "aeaeae");
 
     auto current = time.current();
+    auto inputtimer = time.current();
 
     while(sfmlDisplay.isOk()) {
         sfmlDisplay.periodic();
@@ -118,6 +125,14 @@ int main(int argc, char* argv[]) {
 
         if(shouldEnd)
             break;
+
+        if((time.current() - inputtimer).asMiliseconds() > 250){
+            static int counter = 0;
+
+            inputtimer = time.current();
+            vm->handleInput("input_1", std::to_string(counter++));
+            counter %= 255;
+        }
     }
 
     delete vm;

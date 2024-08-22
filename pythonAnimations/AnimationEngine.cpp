@@ -6,6 +6,7 @@ extern "C" {
     int (*func_to_get_numer_of_pixels)(void);
     void (*func_get_module_name)(const char* str);
     void (*func_register_color_parameter)(const char* name, const char* def);
+    void (*func_register_input)(const char* name, int type);
 
     void set_pixel_id_r_g_b(int id , int r , int g, int b){
         func_to_set_pixel(id, r, g, b);
@@ -19,5 +20,8 @@ extern "C" {
     }
     void register_color_parameter(const char* name, const char* defaultValue) {
         func_register_color_parameter(name, defaultValue);
+    }
+    void register_input(const char* name, int type) {
+        func_register_input(name, type);
     }
 }
