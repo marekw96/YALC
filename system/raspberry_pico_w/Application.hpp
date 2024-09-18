@@ -7,6 +7,7 @@ class InternetManager;
 class EffectsManager;
 class Storage;
 class LedsConfiguration;
+class InputManager;
 
 #include "../pythonAnimations/AnimationEngine.hpp"
 #include "ws2812/LedString_ws2812.hpp"
@@ -18,6 +19,7 @@ struct Application {
     Storage* storage;
     LedsConfiguration* ledsConfiguration;
     AnimationEngine<LedStringCombined<LedString_ws2812,LedString_ws2812>>* animationEngine;
+    InputManager* inputManager;
 
     bool shouldBeRebooted = false;
 };

@@ -14,6 +14,9 @@
 #include "Application.hpp"
 #include "EffectsManager.hpp"
 #include "LedsConfiguration.hpp"
+#include "InputManager.hpp"
+#include "inputs/DigitalInput.hpp"
+#include "inputs/NCInput.hpp"
 
 #include "webpages/ConnectionSettings.hpp"
 #include "webpages/EffectsPage.hpp"
@@ -31,6 +34,7 @@ void core_with_non_rt_stuff() {
     InternetManager internet(application);
     WebServer webServer;
     LedsConfiguration ledsConfiguration(application);
+    InputManager inputManager(application);
     UDPSocket udpSocket;
     Discover::DeviceDescription description{.name = {'L', 'E','D', 'Y'}, .type = Discover::Type::LEDS};
     Discover::SocketFunctions socketBroadcastFunctions;
@@ -40,6 +44,7 @@ void core_with_non_rt_stuff() {
 
     application.internetManager = &internet;
     application.ledsConfiguration = &ledsConfiguration;
+    application.inputManager = &inputManager;
 
     internet.init();
     ledsConfiguration.init();
@@ -57,11 +62,19 @@ void core_with_non_rt_stuff() {
     IndexPage indexPage(application);
     LedsConfigurationPage ledsConfigurationPage(application);
     RebootPage rebootPage(application);
+
     webServer.registerHandler(connectionSettingsPage.getHandler());
     webServer.registerHandler(effectsPage.getHandler());
     webServer.registerHandler(ledsConfigurationPage.getHandler());
     webServer.registerHandler(rebootPage.getHandler());
     webServer.registerHandler(indexPage.getHandler());
+
+    DigitalInput digitalInput_7("DigitalPin 7", 7);
+    NCInput NCInputDigital("N/C", InputType::DIGITAL);
+    NCInput NCInputAnalog("N/C", InputType::ANALOG);
+    inputManager.registerInput(NCInputAnalog.getHandler());
+    inputManager.registerInput(NCInputDigital.getHandler());
+    inputManager.registerInput(digitalInput_7.getHandler());
 
     LedString_ws2812 ledString1(0, ledsConfiguration.getPixelsFor(0), to_colorOrder(ledsConfiguration.getColorConfig(0)));
     LedString_ws2812 ledString2(1, ledsConfiguration.getPixelsFor(1), to_colorOrder(ledsConfiguration.getColorConfig(1)));
@@ -93,6 +106,12 @@ void core_with_non_rt_stuff() {
             application.effectsManager->restartedEffects();
             printf("Main effect restarted\n");
         }
+
+        const auto& effectDescription = application.effectsManager->getEffectDescription(application.effectsManager->getSelectedEffectId());
+        for(const auto& inputConnection : effectDescription.inputs){
+            auto value = application.inputManager->getValue(inputConnection.deviceInputName);
+            vm.handleInput(inputConnection.description.name, value);
+        }
     }
 
     internet.deinit();
@@ -110,7 +129,7 @@ void delayStartup() {
 int main() {
     stdio_init_all();
 
-    //delayStartup();
+    delayStartup();
 
     Storage storage;
     application.storage;
@@ -143,7 +162,7 @@ int main() {
         printf("Failed to init effectsManager but keep going... \n");
     }
 
-    application.effectsManager->selectEffect(storage.read_uint32_t("cfg/eff_selected"));
+    application.effectsManager->selectEffect(0);//storage.read_uint32_t("cfg/eff_selected"));
     core_with_non_rt_stuff();
 
     return 0;

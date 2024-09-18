@@ -9,6 +9,7 @@ extern void set_pixel_id_r_g_b(int, int, int, int);
 extern int get_number_of_pixels();
 extern void set_module_name(const char* str);
 extern void register_color_parameter(const char* name, const char* defaultValue);
+extern void register_input(const char* name, int type);
 
 // This is the function which will be called from Python as example.add_ints(a, b).
 STATIC mp_obj_t leds_set_pixel_id_r_g_b(size_t n_args, const mp_obj_t *args) {
@@ -45,6 +46,14 @@ STATIC mp_obj_t leds_register_color_parameter(mp_obj_t name, mp_obj_t defaultVal
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(leds_register_color_parameter_obj, leds_register_color_parameter);
 
+STATIC mp_obj_t leds_register_input(mp_obj_t name, mp_obj_t type) {
+    const char* name_str = mp_obj_str_get_str(name);
+    int type_int = mp_obj_get_int(type);
+    register_input(name_str, type_int);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(leds_register_input_obj, leds_register_input);
+
 // Define all properties of the example module.
 // Table entries are key/value pairs of the attribute name (a string)
 // and the MicroPython object reference.
@@ -56,6 +65,7 @@ STATIC const mp_rom_map_elem_t leds_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_get_number_of_pixels), MP_ROM_PTR(&leds_get_number_of_pixels_obj) },
     { MP_ROM_QSTR(MP_QSTR_set_module_name), MP_ROM_PTR(&leds_set_module_name_obj) },
     { MP_ROM_QSTR(MP_QSTR_register_color_parameter), MP_ROM_PTR(&leds_register_color_parameter_obj) },
+    { MP_ROM_QSTR(MP_QSTR_register_input), MP_ROM_PTR(&leds_register_input_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(leds_module_globals, leds_module_globals_table);
 

@@ -12,3 +12,15 @@ struct ParameterDescription {
     std::string value;
 };
 
+enum class InputType {
+    INVALID = 0,
+    DIGITAL=1,
+    ANALOG=2,
+    RAW=3
+};
+
+struct InputDescription {
+    InputType type;
+    std::string name;
+};
+

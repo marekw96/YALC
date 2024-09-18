@@ -7,9 +7,15 @@
 #include "Storage.hpp"
 
 #include "../pythonAnimations/Parameter.hpp"
+#include "InputManager.hpp"
 
 enum class EffectType {
     BUILTIN, USER_DEFINED
+};
+
+struct InputConnection {
+    InputDescription description;
+    std::string deviceInputName = "";
 };
 
 struct EffectDescription {
@@ -17,6 +23,7 @@ struct EffectDescription {
     std::string name;
     EffectType type;
     std::vector<ParameterDescription> parameters;
+    std::vector<InputConnection> inputs;
 };
 
 class EffectsManager {
@@ -37,9 +44,11 @@ public:
     bool removeEffect(uint32_t id);
 
     bool setParameterForEffect(uint32_t id, const std::string& name, const std::string& value);
+    bool setInputForEffect(uint32_t id, const std::string &effectInputName, const std::string &deviceInputName);
 
     uint32_t getNextAnimationTimeout() const;
     void setNextAnimationTimeout(uint32_t miliseconds);
+    const EffectDescription& getEffectDescription(uint32_t id);
 private:
     Application& app;
     uint32_t selectedEffect = 0;
@@ -50,9 +59,11 @@ private:
     uint32_t nextAnimationTimeElapsedUs = 0;
 
     std::string fetchEffectCode(uint32_t id);
-    void registerNewEffect(int id, const std::string& name, const std::vector<ParameterDescription>& parameters);
+    void registerNewEffect(int id, const std::string& name, const std::vector<ParameterDescription>& parameters, const std::vector<InputConnection>& inputs);
     void readAllStoredEffects();
     void storedDirEntry(const Storage::DirEntryInfo& entry);
     bool storeParameters(const char* path, const std::vector<ParameterDescription> &parameters);
+    bool storeInputs(const char* path, const std::vector<InputConnection> &inputs);
     std::vector<ParameterDescription> readEffectParameters(const char* path);
+    std::vector<InputConnection> readEffectInputs(const char* path);
 };
