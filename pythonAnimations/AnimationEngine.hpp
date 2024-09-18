@@ -105,6 +105,7 @@ class AnimationEngine {
 
         void handleInput(const std::string& name, const std::string& value){
             std::string cmd = std::string("currentAnimation.handleInput('") + name + "', " + value + ")";
+            //printf("handleInput %s\n", cmd.c_str());
             this->exec(cmd);
         }
 
@@ -135,6 +136,7 @@ class AnimationEngine {
 
             input.name = name;
             inputs.push_back(input);
+            printf("[VM]%s %d\n", name, type);
         }
 
     private:

@@ -14,9 +14,9 @@ struct ParameterDescription {
 
 enum class InputType {
     INVALID = 0,
-    DIGITAL,
-    ANALOG,
-    RAW
+    DIGITAL=1,
+    ANALOG=2,
+    RAW=3
 };
 
 struct InputDescription {

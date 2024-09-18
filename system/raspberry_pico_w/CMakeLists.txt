@@ -33,6 +33,7 @@ list(APPEND "RPI_PICO_W_SRC" "system/raspberry_pico_w/LedsConfiguration.cpp")
 list(APPEND "RPI_PICO_W_SRC" "system/raspberry_pico_w/UDPSocket.cpp")
 list(APPEND "RPI_PICO_W_SRC" "pythonAnimations/AnimationEngine.cpp")
 list(APPEND "RPI_PICO_W_SRC" "discover/Discover.cpp")
+list(APPEND "RPI_PICO_W_SRC" "system/raspberry_pico_w/InputManager.cpp")
 
 
 add_executable(RpiPicoW_YALC ${YALC_PROTOCOL_SRC}  ${RPI_PICO_W_SRC})

@@ -13,11 +13,14 @@ class InputExample(YALCAnimation):
 
 	def getInputs(self):
 		return [
-			Input("input_1", Input.RAW),
+			Input("input_1", Input.DIGITAL),
 		]
 
 	def handleInput(self, name, value):
-		self.color = [value, 0, 0]
+		if value == 1:
+			self.color = [20, 0, 0]
+		else:
+			self.color = [0, 0, 0]
 
 
 def create():

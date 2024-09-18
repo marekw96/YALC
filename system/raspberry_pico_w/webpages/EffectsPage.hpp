@@ -17,4 +17,5 @@ private:
     void handlechangeParameters(const Request& request, Response& response);
     bool handleRemovingEffectQuestion(const Request& request, Response& response);
     void handleChangeRotation(const Request& request, Response& response);
+    void handlechangeInputConnections(const Request& request, Response& response);
 };

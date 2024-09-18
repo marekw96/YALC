@@ -122,8 +122,17 @@ void EffectsManager::restartedEffects()
             for(const auto& param: eff.parameters) {
                 app.animationEngine->setColorParameterValue(param.name, param.value);
             }
+
+            app.inputManager->disableAll();
+
+            for(const auto& input: eff.inputs){
+                app.inputManager->enable(input.deviceInputName);
+            }
+            break;
         }
     }
+
+
 }
 
 bool EffectsManager::addNewEffect(const std::string &code)
@@ -161,11 +170,26 @@ bool EffectsManager::addNewEffect(const std::string &code)
         return false;
     }
 
+    auto inputs = app.animationEngine->getInputs();
+    printf("[EffectsManager][addNewEffect] %s has inputs %d\n", name.c_str(), inputs.size());
+    std::vector<InputConnection> effectInputs;
+    auto inputsFileName = path + "/inputs";
+    for(const auto& input: inputs){
+        InputConnection effectInputColnnection;
+        effectInputColnnection.description = input;
+        effectInputColnnection.deviceInputName = "N/C";
+        effectInputs.push_back(effectInputColnnection);
+    }
+    if(!storeInputs(inputsFileName.c_str(), effectInputs)){
+        printf("[EffectsManager] failed to store effect inputs\n");
+        return false;
+    }
+
     app.effectsManager->reloadCurrentEffect();
 
     app.storage->store("cfg/ef_last_reg", id);
     lastRegisteredId = id;
-    registerNewEffect(id, name, parameters);
+    registerNewEffect(id, name, parameters, effectInputs);
     printf("[EffectsManager] added new effect with id: %d name: %s\n", id, name.c_str());
 
     return true;
@@ -180,10 +204,14 @@ bool EffectsManager::removeEffect(uint32_t id)
             auto codePath = path + "/code";
             auto namePath = path + "/name";
             auto paramsPath = path + "/params";
+            auto inputsPath = path + "/inputs";
             app.storage->remove(codePath.c_str());
             app.storage->remove(namePath.c_str());
             app.storage->remove(paramsPath.c_str());
+            app.storage->remove(inputsPath.c_str());
+
             app.storage->remove(path.c_str());
+
             effects.erase(effects.begin() + i);
 
             if(selectedEffect == id)
@@ -218,6 +246,30 @@ bool EffectsManager::setParameterForEffect(uint32_t id, const std::string &name,
     return false;
 }
 
+bool EffectsManager::setInputForEffect(uint32_t id, const std::string &effectInputName, const std::string &deviceInputName)
+{
+    for(auto& eff: effects) {
+        if(eff.id == id) {
+            for(auto& desc : eff.inputs) {
+                if(desc.description.name == effectInputName) {
+                    desc.deviceInputName = deviceInputName;
+
+                    if(id == selectedEffect){
+                        app.inputManager->enable(desc.description.name);
+                    }
+
+                    auto path = std::string("eff/e_") + std::to_string(id) + "/inputs";
+                    storeInputs(path.c_str(), eff.inputs);
+
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
 uint32_t EffectsManager::getNextAnimationTimeout() const
 {
     return nextAnimationTimeoutMs;
@@ -233,6 +285,17 @@ void EffectsManager::setNextAnimationTimeout(uint32_t miliseconds)
     app.storage->store("cfg/eff_additional", load);
 }
 
+const EffectDescription &EffectsManager::getEffectDescription(uint32_t id)
+{
+    for(const auto& eff : effects){
+        if(eff.id == id){
+            return eff;
+        }
+    }
+
+    return effects[0];
+}
+
 std::string EffectsManager::fetchEffectCode(uint32_t id)
 {
     auto path = std::string("eff/e_") + std::to_string(id) + "/code";
@@ -240,15 +303,16 @@ std::string EffectsManager::fetchEffectCode(uint32_t id)
     return app.storage->read_string(path.c_str());
 }
 
-void EffectsManager::registerNewEffect(int id, const std::string &name, const std::vector<ParameterDescription>& parameters)
+void EffectsManager::registerNewEffect(int id, const std::string &name, const std::vector<ParameterDescription>& parameters, const std::vector<InputConnection>& inputs)
 {
     EffectDescription effect;
     effect.name = name;
     effect.id = id;
     effect.type = EffectType::USER_DEFINED;
     effect.parameters = parameters;
+    effect.inputs = inputs;
 
-    printf("[EffectsManager][registerNewEffect]id: %d, name: %s, parameters(num): %d type: USER_DEFINED\n", id, name.c_str(), parameters.size());
+    printf("[EffectsManager][registerNewEffect]id: %d, name: %s, parameters(num): %d, inputs(num): %d, type: USER_DEFINED\n", id, name.c_str(), parameters.size(), inputs.size());
 
     effects.emplace_back(std::move(effect));
 }
@@ -324,6 +388,61 @@ std::vector<ParameterDescription> EffectsManager::readEffectParameters(const cha
     return paramsOut;
 }
 
+std::vector<InputConnection> EffectsManager::readEffectInputs(const char *path)
+{
+    std::vector<InputConnection> inputsOut;
+    auto params = app.storage->read_string(path);
+    if(params.empty())
+        return inputsOut;
+
+    auto end = params.find("\n");
+    if(end == std::string::npos)
+        return inputsOut;
+
+    printf("readEffectsInputs \n%s\n", params.c_str());
+
+    auto numberOfInputs = std::stoi(params.substr(0, end));
+        for(int i = 0; i < numberOfInputs; ++i) {
+        auto begin = end+1;
+        end = params.find("\n", begin);
+        if(end == std::string::npos)
+            return inputsOut;
+
+        auto type_str = params.substr(begin, end-begin);
+        printf("type: %s\n", type_str.c_str());
+        InputType type = InputType::RAW;
+        if(type_str == "1")
+            type = InputType::DIGITAL;
+        if(type_str == "2")
+            type = InputType::ANALOG;
+
+        begin = end+1;
+        end = params.find("\n", begin);
+        if(end == std::string::npos)
+            return inputsOut;
+
+        auto inputName = params.substr(begin, end-begin);
+        printf("inputName: %s\n", inputName.c_str());
+        begin = end+1;
+        end = params.find("\n", begin);
+        if(end == std::string::npos)
+            return inputsOut;
+
+        auto hwInputName = params.substr(begin, end-begin);
+        printf("hwInputName: %s\n", hwInputName.c_str());
+
+        InputConnection p;
+        p.deviceInputName = hwInputName;
+        p.description.type = type;
+        p.description.name = inputName;
+
+        inputsOut.push_back(p);
+    }
+    printf("done\n");
+
+    return inputsOut;
+}
+
 void EffectsManager::storedDirEntry(const Storage::DirEntryInfo &entry)
 {
     printf("[EffectsManager][storedDirEntry]entry name %s\n", entry.name);
@@ -337,9 +456,11 @@ void EffectsManager::storedDirEntry(const Storage::DirEntryInfo &entry)
         auto path = std::string("eff/") + entryName + "/name";
         auto effectName = app.storage->read_string(path.c_str());
         auto pathParameters = std::string("eff/") + entryName + "/params";
+        auto pathInputs = std::string("eff/") + entryName + "/inputs";
         auto parameters = readEffectParameters(pathParameters.c_str());
+        auto inputs = readEffectInputs(pathInputs.c_str());
 
-        registerNewEffect(id, effectName, parameters);
+        registerNewEffect(id, effectName, parameters, inputs);
     }
 }
 
@@ -351,6 +472,18 @@ bool EffectsManager::storeParameters(const char* path, const std::vector<Paramet
         txt += param.name + "\n";
         txt += param.defaultValue + "\n";
         txt += param.value + "\n";
+    }
+
+    return app.storage->store(path, txt);
+}
+
+bool EffectsManager::storeInputs(const char *path, const std::vector<InputConnection> &inputs)
+{
+    std::string txt = std::to_string(inputs.size()) + "\n";
+    for(const auto& input : inputs) {
+        txt += std::to_string(static_cast<int>(input.description.type)) + "\n";
+        txt += input.description.name + "\n";
+        txt += input.deviceInputName + "\n";
     }
 
     return app.storage->store(path, txt);

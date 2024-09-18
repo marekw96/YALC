@@ -34,11 +34,22 @@ Response EffectsPage::handle(const Request &request)
     if(request.uri.find("/effects/rotate") == 0) {
         handleChangeRotation(request, response);
     }
+    if(request.uri.find("/effects/changeInputConnections") == 0) {
+        handlechangeInputConnections(request, response);
+    }
 
     if(printContent){
         auto writeOption = [&](uint32_t ms, const std::string& name){
             response.write("<option value=\"")
                     .write(std::to_string(ms)).write("\" ").write(app.effectsManager->getNextAnimationTimeout() == ms?"selected":"").write(">").write(name).write("</option>");
+        };
+        auto writeOptionStr = [&](const std::string& value, bool selected) {
+            response.write("<option value=\"")
+                    .write(value)
+                    .write("\" ")
+                    .write(selected?"selected>":">")
+                    .write(value)
+                    .write("</option>");
         };
 
         response.write("Change animation to next user defined animation after: ");
@@ -67,7 +78,7 @@ Response EffectsPage::handle(const Request &request)
                 response.write(std::string("  <a href=\"/effects/remove_check/") + std::to_string(effect.id) + "\">X</a>");
 
             if(effect.parameters.size() > 0) {
-                response.write("<br /><form method=\"POST\" action=\"/effects/changeParameters/")
+                response.write("<br />Parameters:<form method=\"POST\" action=\"/effects/changeParameters/")
                         .write(std::to_string(effect.id)).write("\">");
 
                 for(const auto& param: effect.parameters){
@@ -78,6 +89,28 @@ Response EffectsPage::handle(const Request &request)
 
                 response.write("<button>Store</button></form>");
             }
+
+            //response.write("Has inputs:").write(std::to_string(effect.inputs.size()));
+            if(effect.inputs.size() > 0){
+                response.write("<br />Inputs:<form method=\"POST\" action=\"/effects/changeInputConnections/")
+                        .write(std::to_string(effect.id)).write("\">");
+
+                for(const auto& inputConnection: effect.inputs){
+                    response.write("<select name=\"").write(inputConnection.description.name).write("\">");
+                    const auto& inputs = app.inputManager->getInputs();
+                    for(const auto& hwInput : inputs){
+                        if(inputConnection.description.type == InputType::RAW ||
+                           inputConnection.description.type == hwInput.description.type) {
+                            bool isSelected = inputConnection.deviceInputName == hwInput.description.name;
+                            writeOptionStr(hwInput.description.name, isSelected);
+                        }
+                    }
+                    response.write("</select>");
+                }
+
+                response.write("<button>Store</button></form>");
+            }
+
             response.write("</li>");
         }
         response.write("</ul>");
@@ -218,4 +251,25 @@ void EffectsPage::handleChangeRotation(const Request &request, Response &respons
     app.effectsManager->setNextAnimationTimeout(value);
 
     response.write("Changed timeout!<br />");
+}
+
+void EffectsPage::handlechangeInputConnections(const Request &request, Response &response)
+{
+    auto part = request.uri.rfind("/");
+    if(part == request.uri.length()-1) {
+        response.write("Unable to set input connection<br />");
+        return;
+    }
+
+    auto id_str = request.uri.substr(part+1);
+    uint32_t id = std::atoi(id_str.c_str());
+
+    for(const auto& param : request.parameters) {
+        //Input type compatibility should be checked in EffectsManager
+        printf("[EffectsPage]setting input for effect[%d] %s->%s\n", id, param.value.c_str(), param.name.c_str());
+        app.effectsManager->setInputForEffect(id, param.name, param.value);
+    }
+
+    if(app.effectsManager->getSelectedEffectId() == id)
+        app.effectsManager->reloadCurrentEffect();
 }
