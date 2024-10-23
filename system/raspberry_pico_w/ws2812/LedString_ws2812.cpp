@@ -33,3 +33,18 @@ void LedString_ws2812::setColors(uint32_t startPixel, byte *data, uint32_t numbe
         leds.setPixelColor(startPixel + i, data[3*i + 0], data[3*i + 1], data[3*i + 2]);
     }
 }
+
+void LedString_ws2812::setPixel(uint32_t pixel, uint8_t r, uint8_t g, uint8_t b)
+{
+    switch(colorConfig){
+        case YALC::ColorOrder::RGB:
+            return leds.setPixelColor(pixel, r, g, b);
+        case YALC::ColorOrder::BGR:
+            return leds.setPixelColor(pixel, b, g, r);
+        case YALC::ColorOrder::BRG:
+            return leds.setPixelColor(pixel, b, r, g);
+        case YALC::ColorOrder::GRB:
+        default:
+            return leds.setPixelColor(pixel, g, r, b);
+    }
+}

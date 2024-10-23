@@ -107,6 +107,13 @@ int main() {
         printf("wait %d...\n", i);
     }
 
+}
+
+int main() {
+    stdio_init_all();
+
+    //delayStartup();
+
     Storage storage;
     application.storage;
 
@@ -125,7 +132,6 @@ int main() {
     }
     application.effectsManager->selectEffect(storage.read_uint32_t("cfg/eff_selected"));
 
-    multicore_launch_core1(core_with_python_animations);
     core_with_non_rt_stuff();
 
     return 0;
