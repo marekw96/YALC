@@ -1,12 +1,12 @@
 class LedStatus:
-    Inactive = int(0)
-    Alive = int(1)
-    Dead = int(2)
+    Inactive: int = int(0)
+    Alive: int = int(1)
+    Dead: int = int(2)
 
 class Color:
-    Red = int(0)
-    Green = int(0)
-    Blue = int(0)
+    Red: int
+    Green: int
+    Blue: int
 
     def __init__(self, red, green, blue):
         self.Red = red
@@ -14,11 +14,11 @@ class Color:
         self.Blue = blue
 
 class LedVisitor:
-    counter = int(0)
-    ledId = int(0)
-    status = LedStatus.Inactive
+    counter: int = int(0)
+    ledId: int = int(0)
+    status: int = LedStatus.Inactive
     fadeProps = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1]
-    color = Color(0,0,0)
+    color: Color = Color(0,0,0)
 
     def __init__(self, ledId, color):
         self.counter = 0
@@ -44,7 +44,7 @@ class LedVisitor:
 
 class LedQueue:
     ledList = []
-    queueSize = 20
+    queueSize = 10
 
     def add(self, ledVisitor):
         for led in self.ledList:
@@ -61,9 +61,9 @@ class LedQueue:
 
 
 class Sparks2(YALCAnimation):
-    timeElapsed = int(0)
-    nextLedTimer = int(0)
-    counter = int(0)
+    timeElapsed: int = int(0)
+    nextLedTimer: int = int(0)
+    counter: int = int(0)
     color = [255,255,255]
     timers = [500000, 750000, 350000, 500000, 650000, 300000, 450000, 600000, 250000, 400000, 550000]
     queue = LedQueue()
@@ -72,8 +72,8 @@ class Sparks2(YALCAnimation):
     def __init__(self):
         self.initialise()
 
-    def rand(self, seed):
-        return int((seed * 23) + 12347) % 100
+    def rand(self, seed, modulo):
+        return int((seed * 23) + 12347) % modulo
 
     def fade(self):
         for id in range(self.getNumberOfPixels()):
@@ -89,16 +89,16 @@ class Sparks2(YALCAnimation):
         return "Sparks2"
 
     def periodic(self, timeElapsedInUs):
-        randomNum = self.rand(timeElapsedInUs % 17)
+        randomNum = self.rand(timeElapsedInUs % 2347, self.getNumberOfPixels())
 
         # refill queue
         while not self.queue.isFull():
             while not self.queue.add(LedVisitor(randomNum, Color(self.color[0], self.color[1], self.color[2]))):
-                randomNum = self.rand(randomNum)
-            randomNum = self.rand(randomNum)
+                randomNum = (randomNum + 3) % self.getNumberOfPixels()
+            randomNum = self.rand(randomNum, self.getNumberOfPixels())
 
         # change color and remove dead leds
-        if self.timeElapsed > 100000:
+        if self.timeElapsed > 75000:
             self.timeElapsed = 0
             ledsToRemove = []
             for led in self.queue.ledList:
