@@ -73,7 +73,7 @@ class Sparks2(YALCAnimation):
         self.initialise()
 
     def rand(self, seed):
-        return int((seed * 23) + 12345) % 100
+        return int((seed * 23) + 12347) % 100
 
     def fade(self):
         for id in range(self.getNumberOfPixels()):
@@ -107,7 +107,6 @@ class Sparks2(YALCAnimation):
 
             for led in ledsToRemove:
                 self.queue.remove(led)
-
 
         # take next inactive led
         if self.nextLedTimer > self.timers[self.counter]:
