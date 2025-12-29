@@ -44,13 +44,14 @@ class LedVisitor:
 
 class LedQueue:
     ledList = []
-    queueSize = 7
+    queueSize = 20
 
     def add(self, ledVisitor):
         for led in self.ledList:
             if ledVisitor.ledId == led.ledId:
-                return
+                return False  # already in the list
         self.ledList.append(ledVisitor)
+        return True
 
     def remove(self, ledVisitor):
         self.ledList.remove(ledVisitor)
@@ -64,7 +65,7 @@ class Sparks2(YALCAnimation):
     nextLedTimer = int(0)
     counter = int(0)
     color = [255,255,255]
-    timers = [1000000, 1500000, 700000, 1000000, 1100000, 600000]
+    timers = [500000, 750000, 350000, 500000, 650000, 300000, 450000, 600000, 250000, 400000, 550000]
     queue = LedQueue()
 
 
@@ -92,7 +93,8 @@ class Sparks2(YALCAnimation):
 
         # refill queue
         while not self.queue.isFull():
-            self.queue.add(LedVisitor(randomNum, Color(self.color[0], self.color[1], self.color[2])))
+            while not self.queue.add(LedVisitor(randomNum, Color(self.color[0], self.color[1], self.color[2]))):
+                randomNum = self.rand(randomNum)
             randomNum = self.rand(randomNum)
 
         # change color and remove dead leds
