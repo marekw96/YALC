@@ -30,5 +30,6 @@
 #define MICROPY_PY_OS (0)
 
 // Add random
+#define MICROPY_PY_RANDOM                       (1)
 #define MICROPY_PY_OS_URANDOM                   (1)
-#define MICROPY_PY_RANDOM_EXTRA_FUNCS (1)
+#define MICROPY_PY_RANDOM_EXTRA_FUNCS           (1)

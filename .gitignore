@@ -5,3 +5,8 @@ pythonAnimations/build/
 pythonAnimations/py_implementation/embed_micropython/build-embed/
 pythonAnimations/py_implementation/embed_micropython/build/
 pythonAnimations/py_implementation/embed_micropython/micropython_embed/
+
+# Build and artifacts
+build/
+build_test/
+.DS_Store
