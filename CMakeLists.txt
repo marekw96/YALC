@@ -14,6 +14,9 @@ endif()
 
 if( ${TARGET} STREQUAL "raspberry_pico_w" )
     set(PICO_BOARD "pico_w")
+    if(NOT DEFINED PICOTOOL_FORCE_FETCH_FROM_GIT)
+        set(PICOTOOL_FORCE_FETCH_FROM_GIT ON)
+    endif()
     include("system/raspberry_pico_w/pico-sdk/pico_sdk_init.cmake")
     project(YALC CXX C ASM)
 
