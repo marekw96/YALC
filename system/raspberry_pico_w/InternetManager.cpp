@@ -6,6 +6,28 @@
 #include "lwip/timeouts.h"
 #include "lwip/dhcp.h"
 
+namespace {
+const char* connection_status(int status){
+    switch(status){
+        case CYW43_LINK_DOWN:
+            return "wifi down";
+        case CYW43_LINK_JOIN:
+            return "connected";
+        case CYW43_LINK_NOIP:
+            return "connected but no ip address";
+        case CYW43_LINK_UP:
+            return "connected with ip address";
+        case CYW43_LINK_FAIL:
+            return "connection failed";
+        case CYW43_LINK_NONET:
+            return "no matching ssid found";
+        case CYW43_LINK_BADAUTH:
+            return "authentication failure";
+        default:
+            return "unknown";
+    }
+}
+}
 
 
 static void netif_sta_status_callback(netif *netif)
@@ -152,7 +174,7 @@ void InternetManager::startDHCP()
     printf("[InternetManager]MAC %s\n", mac);
 
     auto status = cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA);
-    printf("[InternetManager]status %d\n", status);
+    printf("[InternetManager]status %s [%d]\n", connection_status(status), status);
     printf("[InternetManager]IP: %s\n",ip4addr_ntoa(netif_ip4_addr(netif_default)));
 
 
@@ -223,6 +245,7 @@ void InternetManager::deinit()
 {
     cyw43_arch_deinit();
 }
+
 static int last_status = 0;
 void InternetManager::periodic()
 {
@@ -231,7 +254,7 @@ void InternetManager::periodic()
 
     auto status = cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA);
     if(last_status != status) {
-        printf("Status changed from %d to %d \n", last_status, status);
+        printf("Status changed from %s[%d] to %s[%d] \n", connection_status(last_status), last_status, connection_status(status), status);
         last_status = status;
     }
 
