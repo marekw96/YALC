@@ -45,6 +45,8 @@ Response ConnectionSettingsPage::handle(const Request &request)
             .write("<option value=\"wpa\"").write(app.internetManager->getAuth() == NetworkAuth::WPA?" selected":"").write(">WPA</option>")
             .write("<option value=\"wpa2\"").write(app.internetManager->getAuth() == NetworkAuth::WPA2_AES?" selected":"").write(">WPA2 AES</option>")
             .write("<option value=\"wpaM\"").write(app.internetManager->getAuth() == NetworkAuth::WPA2_MIXED?" selected":"").write(">WPA2 mixed</option>")
+            .write("<option value=\"wpa3\"").write(app.internetManager->getAuth() == NetworkAuth::WPA3_SAE_AES?"selected":"").write(">WPA3 </option>")
+            .write("<option value=\"wpa3wpa2\"").write(app.internetManager->getAuth() == NetworkAuth::WPA3_WPA2_AES?"selected":"").write(">WPA3 WPA2</option>")
             .write("</select>")
             .write("<button>Change</button></form><br />");
 
@@ -95,6 +97,10 @@ void ConnectionSettingsPage::handleChangeSTA(const Request &request, Response &r
             auth = NetworkAuth::WPA2_AES;
         else if(val == "wpaM")
             auth = NetworkAuth::WPA2_MIXED;
+        else if(val == "wpa3")
+            auth = NetworkAuth::WPA3_SAE_AES;
+        else if(val == "wpa3wpa2")
+            auth = NetworkAuth::WPA3_WPA2_AES;
         else
             auth = NetworkAuth::NONE;
     }

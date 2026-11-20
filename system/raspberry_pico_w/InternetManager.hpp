@@ -41,7 +41,9 @@ enum class NetworkAuth {
     NONE = CYW43_AUTH_OPEN,
     WPA = CYW43_AUTH_WPA_TKIP_PSK,
     WPA2_AES = CYW43_AUTH_WPA2_AES_PSK,
-    WPA2_MIXED = CYW43_AUTH_WPA2_MIXED_PSK
+    WPA2_MIXED = CYW43_AUTH_WPA2_MIXED_PSK,
+    WPA3_SAE_AES = CYW43_AUTH_WPA3_SAE_AES_PSK,
+    WPA3_WPA2_AES = CYW43_AUTH_WPA3_WPA2_AES_PSK
 };
 
 static const char* to_char(NetworkAuth auth) {
@@ -54,6 +56,10 @@ static const char* to_char(NetworkAuth auth) {
             return "WPA2 AES";
         case NetworkAuth::WPA2_MIXED:
             return "WPA2 MIXED";
+        case NetworkAuth::WPA3_SAE_AES:
+            return "WPA3 SAE AES";
+        case NetworkAuth::WPA3_WPA2_AES:
+            return "WPA3 WPA2 AES";
         default:
             return "?";
     }
@@ -92,7 +98,7 @@ private:
     NetworkAuth storedAUTH = NetworkAuth::NONE;
     TimePoint whenStartedConnectingToSTA{0};
 
-    std::string apSSID = "YALC";
+    std::string apSSID = "YALC_AP";
     std::string apPASSWORD = "12345678";
     NetworkAuth apAUTH = NetworkAuth::NONE;
 
