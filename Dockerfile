@@ -15,6 +15,9 @@ RUN apt-get update && apt-get install -y \
     pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
+# Configure global git safe.directory to prevent dubious ownership errors in CI volume mounts
+RUN git config --global --add safe.directory '*'
+
 WORKDIR /workspace
 
 COPY . /workspace

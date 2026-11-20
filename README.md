@@ -83,6 +83,18 @@ To ensure fully reproducible builds without requiring the ARM toolchain on your 
 
 ---
 
+## 🤖 CI/CD Pipeline (GitHub Actions)
+
+The project includes an automated GitHub Actions workflow (`.github/workflows/build.yml`) designed to build, verify, and package the firmware on every push and pull request.
+
+### Workflow Highlights:
+- **Docker-based Build Environment**: Builds using an isolated Ubuntu 22.04 container pre-configured with CMake, GCC ARM Toolchain, and submodules.
+- **Git Safe Directory Handling**: Automatically sets up `git config --global --add safe.directory '*'` within the container to prevent Git ownership errors (`dubious ownership`) due to UID mismatch during GitHub Actions workspace volume mounting.
+- **Strict Verification**: Fails the build pipeline immediately if the target `.uf2` firmware binary is not generated.
+- **Artifact Archiving**: Automatically stores generated firmware (`.uf2` and `.elf`) as workflow artifacts for download (retained for 30 days).
+
+You can inspect the workflow configuration in [.github/workflows/build.yml](file://.github/workflows/build.yml).
+
 ## 🛠️ Troubleshooting
 
 1. **Missing ARM Compiler (`arm-none-eabi-gcc not found`)**:

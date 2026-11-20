@@ -1,0 +1,63 @@
+name: CI Build
+
+on:
+  push:
+    branches: [ "**" ]
+    tags: [ "v*" ]
+  pull_request:
+    branches: [ "**" ]
+
+jobs:
+  build:
+    name: Build Firmware (Docker)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository with submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile
+          load: true
+          tags: yalc-builder:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Run build inside Docker container
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/workspace \
+            yalc-builder:latest \
+            ./build.sh --target raspberry_pico_w --clean
+
+      - name: Fix artifact file permissions
+        run: |
+          sudo chown -R $USER:$USER build/
+
+      - name: Verify build outputs
+        run: |
+          ls -la build/
+          if [ -f "build/RpiPicoW_YALC.uf2" ]; then
+            echo "UF2 file found successfully."
+          else
+            echo "Error: UF2 file not found in build root!"
+            exit 1
+          fi
+
+      - name: Upload firmware artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: raspberry-pico-w-firmware
+          path: |
+            build/RpiPicoW_YALC.uf2
+            build/RpiPicoW_YALC.elf
+          if-no-files-found: warn
+          retention-days: 30

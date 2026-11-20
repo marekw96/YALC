@@ -1,0 +1,8 @@
+build/
+build_test/
+.git/
+.vscode/
+.idea/
+*.pyc
+*.swp
+.DS_Store
